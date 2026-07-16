@@ -1,0 +1,42 @@
+<%- include('../partials/settings-nav') %>
+
+<% if (apiError) { %>
+  <div class="alert alert-warning"><i class="bi bi-exclamation-triangle-fill me-2"></i>Campaign and group lists could not be refreshed. Existing clinic mappings remain unchanged.</div>
+<% } %>
+
+<section class="content-card clinic-form-card mb-4">
+  <div class="card-heading"><div><h2>Add clinic</h2><p>Connect a clinic to its Hot Prospector campaign and group.</p></div></div>
+  <form action="/settings/clinics" method="post" class="row g-3 mt-1">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="col-md-6"><label class="form-label" for="new-name">Clinic name</label><input class="form-control" id="new-name" name="name" required maxlength="150"></div>
+    <div class="col-md-6"><label class="form-label" for="new-slug">Slug <span class="text-muted fw-normal">(optional)</span></label><input class="form-control" id="new-slug" name="slug" maxlength="120" placeholder="Generated from clinic name"></div>
+    <div class="col-md-6"><label class="form-label" for="new-campaign">Campaign</label><select class="form-select" id="new-campaign" name="hotProspectorCampaignId"><option value="">No campaign mapping</option><% campaigns.forEach((campaign) => { %><option value="<%= campaign.id %>"><%= campaign.name %> · <%= campaign.id %></option><% }) %></select></div>
+    <div class="col-md-6"><label class="form-label" for="new-group">Group</label><select class="form-select" id="new-group" name="hotProspectorGroupId"><option value="">No group mapping</option><% groups.forEach((group) => { %><option value="<%= group.id %>"><%= group.name %> · <%= group.id %></option><% }) %></select></div>
+    <div class="col-md-6"><label class="form-label" for="new-timezone">Timezone</label><input class="form-control" id="new-timezone" name="timezone" value="America/Chicago" required placeholder="America/Chicago"></div>
+    <div class="col-md-3 d-flex align-items-end"><div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" role="switch" id="new-active" name="active" value="true" checked><label class="form-check-label" for="new-active">Active</label></div></div>
+    <div class="col-md-3 d-flex align-items-end justify-content-md-end"><button class="btn btn-primary px-4" type="submit"><i class="bi bi-plus-lg me-2"></i>Add clinic</button></div>
+  </form>
+</section>
+
+<div class="clinic-mapping-list">
+  <% if (clinics.length) { clinics.forEach((clinic) => { %>
+    <details class="content-card clinic-editor">
+      <summary>
+        <span class="clinic-avatar"><%= clinic.name.charAt(0).toUpperCase() %></span>
+        <div><strong><%= clinic.name %></strong><small><%= clinic.hotProspectorCampaignId ? `Campaign ${clinic.hotProspectorCampaignId}` : 'Campaign not mapped' %></small></div>
+        <span class="status-badge <%= clinic.active ? 'active' : 'inactive' %> ms-auto"><%= clinic.active ? 'Active' : 'Inactive' %></span>
+        <i class="bi bi-chevron-down"></i>
+      </summary>
+      <form action="/settings/clinics/<%= clinic._id %>" method="post" class="row g-3 pt-4">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="col-md-6"><label class="form-label" for="name-<%= clinic._id %>">Clinic name</label><input class="form-control" id="name-<%= clinic._id %>" name="name" value="<%= clinic.name %>" required maxlength="150"></div>
+        <div class="col-md-6"><label class="form-label" for="slug-<%= clinic._id %>">Slug</label><input class="form-control" id="slug-<%= clinic._id %>" name="slug" value="<%= clinic.slug %>" maxlength="120"></div>
+        <div class="col-md-6"><label class="form-label" for="campaign-<%= clinic._id %>">Campaign</label><select class="form-select" id="campaign-<%= clinic._id %>" name="hotProspectorCampaignId"><option value="">No campaign mapping</option><% campaigns.forEach((campaign) => { %><option value="<%= campaign.id %>" <%= clinic.hotProspectorCampaignId === campaign.id ? 'selected' : '' %>><%= campaign.name %> · <%= campaign.id %></option><% }) %></select></div>
+        <div class="col-md-6"><label class="form-label" for="group-<%= clinic._id %>">Group</label><select class="form-select" id="group-<%= clinic._id %>" name="hotProspectorGroupId"><option value="">No group mapping</option><% groups.forEach((group) => { %><option value="<%= group.id %>" <%= clinic.hotProspectorGroupId === group.id ? 'selected' : '' %>><%= group.name %> · <%= group.id %></option><% }) %></select></div>
+        <div class="col-md-6"><label class="form-label" for="timezone-<%= clinic._id %>">Timezone</label><input class="form-control" id="timezone-<%= clinic._id %>" name="timezone" value="<%= clinic.timezone %>" required></div>
+        <div class="col-md-3 d-flex align-items-end"><div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" role="switch" id="active-<%= clinic._id %>" name="active" value="true" <%= clinic.active ? 'checked' : '' %>><label class="form-check-label" for="active-<%= clinic._id %>">Active</label></div></div>
+        <div class="col-md-3 d-flex align-items-end justify-content-md-end"><button class="btn btn-outline-primary px-4" type="submit">Save changes</button></div>
+      </form>
+    </details>
+  <% }) } else { %><div class="content-card settings-empty"><i class="bi bi-hospital"></i><p>No clinics configured yet. Add the first clinic above.</p></div><% } %>
+</div>

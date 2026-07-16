@@ -1,0 +1,59 @@
+<%- include('../partials/settings-nav') %>
+
+<div class="integration-hero content-card mb-4">
+  <div class="integration-logo"><i class="bi bi-lightning-charge-fill"></i></div>
+  <div class="flex-grow-1">
+    <div class="d-flex align-items-center gap-2 mb-1"><h2 class="mb-0">Hot Prospector API v2</h2><span class="badge rounded-pill text-bg-success">Backend only</span></div>
+    <p>Token authentication and automatic renewal are configured. Credentials are never sent to the browser.</p>
+  </div>
+  <form action="/settings/integrations/test" method="post">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button class="btn btn-primary" type="submit"><i class="bi bi-wifi me-2"></i>Test connection</button>
+  </form>
+</div>
+
+<% if (apiError) { %>
+  <div class="alert alert-warning"><i class="bi bi-exclamation-triangle-fill me-2"></i>Remote catalog unavailable: <%= apiError %></div>
+<% } %>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <section class="content-card compact-card">
+      <div class="card-heading"><div><h2>Available campaigns</h2><p>Campaigns returned by Hot Prospector.</p></div><span class="count-pill"><%= campaigns.length %></span></div>
+      <div class="catalog-list">
+        <% if (campaigns.length) { campaigns.forEach((campaign) => { %>
+          <div><span class="catalog-icon"><i class="bi bi-megaphone"></i></span><strong><%= campaign.name %></strong><code><%= campaign.id %></code></div>
+        <% }) } else { %><p class="text-muted small mb-0">No campaigns were returned.</p><% } %>
+      </div>
+    </section>
+  </div>
+  <div class="col-lg-6">
+    <section class="content-card compact-card">
+      <div class="card-heading"><div><h2>Available groups</h2><p>Lead groups available for clinic mapping.</p></div><span class="count-pill"><%= groups.length %></span></div>
+      <div class="catalog-list">
+        <% if (groups.length) { groups.forEach((group) => { %>
+          <div><span class="catalog-icon teal"><i class="bi bi-people"></i></span><strong><%= group.name %></strong><code><%= group.id %></code></div>
+        <% }) } else { %><p class="text-muted small mb-0">No groups were returned.</p><% } %>
+      </div>
+    </section>
+  </div>
+</div>
+
+<section class="content-card table-card">
+  <div class="card-heading"><div><h2>Synchronized CSRs</h2><p>Agents saved locally from Hot Prospector.</p></div><span class="count-pill"><%= csrs.length %></span></div>
+  <div class="table-responsive mt-3">
+    <table class="table align-middle app-table">
+      <thead><tr><th>CSR</th><th>External ID</th><th>Clinics</th><th>Status</th></tr></thead>
+      <tbody>
+        <% if (csrs.length) { csrs.forEach((csr) => { %>
+          <tr>
+            <td><div class="table-person"><span><%= csr.name.charAt(0).toUpperCase() %></span><div><strong><%= csr.name %></strong><small><%= csr.email || 'No email provided' %></small></div></div></td>
+            <td><code><%= csr.externalUserId %></code></td>
+            <td><%= csr.clinicIds.length ? csr.clinicIds.map((clinic) => clinic.name).join(', ') : 'Not mapped yet' %></td>
+            <td><span class="status-badge <%= csr.active ? 'active' : 'inactive' %>"><%= csr.active ? 'Active' : 'Inactive' %></span></td>
+          </tr>
+        <% }) } else { %><tr><td colspan="4" class="text-center text-muted py-4">Run a synchronization to import agents.</td></tr><% } %>
+      </tbody>
+    </table>
+  </div>
+</section>

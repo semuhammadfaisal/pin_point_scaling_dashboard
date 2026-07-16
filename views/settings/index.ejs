@@ -1,0 +1,38 @@
+<%- include('../partials/settings-nav') %>
+
+<div class="row g-4">
+  <div class="col-md-6 col-xl-4">
+    <a class="settings-card" href="/settings/integrations">
+      <span class="settings-card-icon indigo"><i class="bi bi-plug-fill"></i></span>
+      <div><h2>Hot Prospector</h2><p>Test the API and review campaigns, groups, and synchronized CSRs.</p></div>
+      <i class="bi bi-chevron-right ms-auto"></i>
+    </a>
+  </div>
+  <div class="col-md-6 col-xl-4">
+    <a class="settings-card" href="/settings/clinics">
+      <span class="settings-card-icon teal"><i class="bi bi-hospital-fill"></i></span>
+      <div><h2>Clinic mapping</h2><p><strong><%= clinicCount %></strong> clinic<%= clinicCount === 1 ? '' : 's' %> configured.</p></div>
+      <i class="bi bi-chevron-right ms-auto"></i>
+    </a>
+  </div>
+  <div class="col-md-6 col-xl-4">
+    <a class="settings-card" href="/settings/sync-logs">
+      <span class="settings-card-icon amber"><i class="bi bi-arrow-repeat"></i></span>
+      <div><h2>Synchronization</h2><p><strong><%= csrCount %></strong> CSR<%= csrCount === 1 ? '' : 's' %> synchronized.</p></div>
+      <i class="bi bi-chevron-right ms-auto"></i>
+    </a>
+  </div>
+</div>
+
+<section class="content-card settings-summary mt-4">
+  <div class="card-heading"><div><h2>Integration status</h2><p>Latest background activity across connected clinics.</p></div></div>
+  <% if (latestSync) { %>
+    <div class="sync-summary-row">
+      <span class="sync-status <%= latestSync.status %>"><i class="bi bi-circle-fill"></i><%= latestSync.status %></span>
+      <div><strong><%= latestSync.syncType.replaceAll('_', ' ') %></strong><small><%= latestSync.startedAt.toLocaleString() %></small></div>
+      <div class="ms-auto text-end"><strong><%= latestSync.recordsCreated + latestSync.recordsUpdated %></strong><small>records processed</small></div>
+    </div>
+  <% } else { %>
+    <div class="settings-empty"><i class="bi bi-clock-history"></i><p>No synchronization has run yet.</p></div>
+  <% } %>
+</section>

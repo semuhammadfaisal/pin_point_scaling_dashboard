@@ -1,0 +1,14 @@
+<%- include('../partials/filter-bar') %>
+<div class="dashboard-alert d-none" data-page-alert role="alert"></div>
+<div class="view-toggle" role="group" aria-label="Booking ratio view"><button class="active" type="button" data-ratio-view="matrix"><i class="bi bi-grid-3x3-gap"></i>Matrix</button><button type="button" data-ratio-view="table"><i class="bi bi-list-ul"></i>Table</button></div>
+
+<section class="report-card table-report-card" data-matrix-view>
+  <div class="table-toolbar"><div><h2>Booking ratio matrix</h2><p>Rows represent CSRs; columns represent clinics.</p></div></div>
+  <div class="table-responsive matrix-scroll"><table class="table ratio-matrix align-middle"><thead data-matrix-head><tr><th>CSR</th><th>Loading clinics…</th></tr></thead><tbody data-matrix-body><tr class="skeleton-row"><td colspan="4"><span></span></td></tr></tbody></table></div>
+</section>
+
+<section class="report-card table-report-card d-none" data-normal-view>
+  <div class="table-toolbar"><div><h2>Booking ratio detail</h2><p>Lead and conversation conversion by clinic and CSR.</p></div><div class="table-tools"><label class="search-control"><span class="visually-hidden">Search ratios</span><i class="bi bi-search"></i><input class="form-control" type="search" placeholder="Search clinic or CSR" data-table-search></label><button class="btn btn-outline-secondary" type="button" data-export><i class="bi bi-download me-2"></i>Export CSV</button></div></div>
+  <div class="table-responsive"><table class="table dashboard-table align-middle"><thead><tr><th>Clinic</th><th>CSR</th><th>Leads</th><th>Conversations</th><th>Bookings</th><th>Lead-to-booking ratio</th><th>Conversation-to-booking ratio</th></tr></thead><tbody data-table-body><tr class="skeleton-row"><td colspan="7"><span></span></td></tr></tbody></table></div>
+  <div class="table-footer"><span data-table-count>Loading ratios…</span><nav class="pagination-controls" data-pagination></nav></div>
+</section>

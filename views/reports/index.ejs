@@ -1,0 +1,38 @@
+<section class="report-builder" data-report-builder>
+  <form class="report-builder-form" data-report-form novalidate>
+    <div class="report-builder-heading">
+      <div><i class="bi bi-file-earmark-spreadsheet" aria-hidden="true"></i><div><strong>Report builder</strong><span>Filters are included in every export.</span></div></div>
+      <span class="report-live-badge"><i class="bi bi-database-check"></i> MongoDB reporting data</span>
+    </div>
+    <div class="report-fields">
+      <div class="filter-field"><label for="report-start-date">Start date</label><input class="form-control" type="date" id="report-start-date" name="startDate" required></div>
+      <div class="filter-field"><label for="report-end-date">End date</label><input class="form-control" type="date" id="report-end-date" name="endDate" required></div>
+      <div class="filter-field"><label for="report-clinic">Clinic</label><select class="form-select" id="report-clinic" name="clinicId"><option value="">All clinics</option><% filterOptions.clinics.forEach((clinic) => { %><option value="<%= clinic.id %>"><%= clinic.name %></option><% }) %></select></div>
+      <div class="filter-field"><label for="report-csr">CSR</label><select class="form-select" id="report-csr" name="csrId"><option value="">All CSRs</option><% filterOptions.csrs.forEach((csr) => { %><option value="<%= csr.id %>" data-clinic-ids="<%= csr.clinicIds.join(',') %>"><%= csr.name %></option><% }) %></select></div>
+      <div class="filter-field report-type-field"><label for="report-type">Report type</label><select class="form-select" id="report-type" name="reportType"><% reportTypes.forEach((report) => { %><option value="<%= report.value %>"><%= report.label %></option><% }) %></select></div>
+    </div>
+    <div class="report-builder-actions">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-eye"></i> Preview report</button>
+      <button class="btn btn-outline-success" type="button" data-export="csv"><i class="bi bi-filetype-csv"></i> CSV</button>
+      <button class="btn btn-outline-success" type="button" data-export="xlsx"><i class="bi bi-file-earmark-excel"></i> Excel</button>
+      <button class="btn btn-light ms-lg-auto" type="button" data-report-reset><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+    </div>
+  </form>
+
+  <div class="dashboard-alert alert alert-danger d-none" role="alert" data-page-alert></div>
+
+  <section class="report-card table-report-card report-preview-card">
+    <div class="table-toolbar">
+      <div><h2 data-preview-title>Report preview</h2><p data-preview-summary>Choose filters and preview a report.</p></div>
+      <span class="report-generated" data-report-generated></span>
+    </div>
+    <div class="table-responsive">
+      <table class="table dashboard-table report-preview-table">
+        <thead data-report-head><tr><th>Preview</th></tr></thead>
+        <tbody data-report-body>
+          <tr><td><div class="report-empty"><i class="bi bi-file-earmark-bar-graph"></i><strong>No report loaded</strong><span>Use the report builder above to load a preview.</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

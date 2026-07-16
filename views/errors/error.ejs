@@ -1,0 +1,7 @@
+<section class="error-card text-center">
+  <div class="error-code"><%= statusCode %></div>
+  <h2>Something went wrong</h2>
+  <p><%= message %></p>
+  <a class="btn btn-primary" href="<%= currentUser ? '/dashboard' : '/login' %>">Return to safety</a>
+  <% if (stack) { %><details class="error-details text-start"><summary>Development details</summary><pre><%= stack %></pre></details><% } %>
+</section>

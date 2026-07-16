@@ -1,0 +1,20 @@
+<div data-clinic-details data-clinic-id="<%= clinic.id %>" data-clinic-name="<%= clinic.name %>"></div>
+<%- include('../partials/filter-bar') %>
+<div class="dashboard-alert d-none" data-page-alert role="alert"></div>
+
+<section class="kpi-grid compact-kpis" aria-label="Clinic key performance indicators">
+  <% [['newLeads','New leads','bi-person-plus'],['outboundDials','Total dials','bi-telephone-outbound'],['validBookings','Bookings','bi-calendar-check'],['leadToBookingRate','Lead conversion','bi-graph-up'],['conversationToBookingRate','Conversation conversion','bi-chat-dots'],['averageSpeedToLeadSeconds','Average speed','bi-stopwatch'],['talkTimeSeconds','Talk time','bi-mic'],['totalGapTimeSeconds','Gap time','bi-pause-circle'],['dialsPerLead','Avg. dials / lead','bi-telephone-forward'],['conversationRate','Conversation rate','bi-chat-square-dots'],['talkTimeUtilization','Talk utilization','bi-pie-chart'],['averageTalkTimePerConversation','Avg. talk / conversation','bi-clock-history']].forEach(([key,label,icon]) => { %>
+    <article class="kpi-card" data-kpi="<%= key %>"><span class="kpi-icon indigo"><i class="bi <%= icon %>"></i></span><div><span><%= label %></span><strong class="skeleton-text" data-kpi-value>Loading</strong></div></article>
+  <% }) %>
+</section>
+
+<section class="chart-dashboard-grid mt-4">
+  <% [['monthlyLeadsChart','Monthly leads','New leads by month'],['monthlyBookingsChart','Monthly bookings','Valid bookings by month'],['conversionTrendChart','Conversion trend','Lead and conversation conversion'],['csrComparisonChart','CSR comparison','Bookings and outbound dials'],['clinicSpeedChart','Speed-to-lead performance','Response window performance'],['clinicCallsChart','Calls and conversations trend','Daily outbound activity']].forEach(([id,title,description]) => { %>
+    <article class="report-card"><div class="report-card-head"><div><h2><%= title %></h2><p><%= description %></p></div></div><div class="chart-stage loading" data-chart-stage><canvas id="<%= id %>"></canvas><div class="chart-skeleton"><span></span><span></span><span></span></div><div class="chart-empty d-none"><i class="bi bi-bar-chart"></i><span>No data for this range</span></div></div></article>
+  <% }) %>
+</section>
+
+<section class="report-card table-report-card mt-4">
+  <div class="table-toolbar"><div><h2>CSR performance</h2><p>Team performance for <%= clinic.name %>.</p></div></div>
+  <div class="table-responsive"><table class="table dashboard-table align-middle"><thead><tr><th>CSR</th><th>Dials</th><th>Answered</th><th>Conversations</th><th>Bookings</th><th>Answer rate</th><th>Booking ratio</th><th>Talk time</th><th>Talk utilization</th><th>Avg. talk / conversation</th><th>Avg. speed</th></tr></thead><tbody data-csr-table><tr class="skeleton-row"><td colspan="11"><span></span></td></tr></tbody></table></div>
+</section>

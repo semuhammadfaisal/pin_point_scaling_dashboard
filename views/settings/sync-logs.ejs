@@ -1,0 +1,46 @@
+<%- include('../partials/settings-nav') %>
+
+<section class="content-card manual-sync-card mb-4">
+  <div class="card-heading"><div><h2>Manual synchronization</h2><p>Run a targeted synchronization without changing the configured schedule.</p></div></div>
+  <div class="manual-sync-actions mt-3">
+    <% [
+      { value: 'recent', icon: 'bi-lightning', label: 'Sync recent data', help: 'Calls, leads, appointments, and transcripts' },
+      { value: 'metrics', icon: 'bi-bar-chart', label: 'Sync today’s metrics', help: 'Current agent dashboard metrics' },
+      { value: 'sevenDays', icon: 'bi-calendar-week', label: 'Re-sync seven days', help: 'Refresh the previous seven days' },
+      { value: 'recalculate', icon: 'bi-calculator', label: 'Recalculate metrics', help: 'Rebuild local daily metrics' }
+    ].forEach((action) => { %>
+      <form action="/settings/sync" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="syncType" value="<%= action.value %>">
+        <button type="submit"><i class="bi <%= action.icon %>"></i><span><strong><%= action.label %></strong><small><%= action.help %></small></span></button>
+      </form>
+    <% }) %>
+  </div>
+</section>
+
+<section class="content-card table-card">
+  <div class="card-heading"><div><h2>Recent sync attempts</h2><p>Every scheduled and manual attempt is recorded.</p></div></div>
+  <div class="table-responsive mt-3">
+    <table class="table align-middle app-table sync-table">
+      <thead><tr><th>Started</th><th>Type</th><th>Status</th><th>Fetched</th><th>Created</th><th>Updated</th><th>Failed</th><th>Duration</th></tr></thead>
+      <tbody>
+        <% if (logs.length) { logs.forEach((log) => { const duration = log.completedAt ? Math.max(0, Math.round((log.completedAt - log.startedAt) / 1000)) : null; %>
+          <tr title="<%= log.errorMessage || '' %>">
+            <td><strong><%= log.startedAt.toLocaleDateString() %></strong><small class="d-block text-muted"><%= log.startedAt.toLocaleTimeString() %></small></td>
+            <td><code><%= log.syncType %></code></td>
+            <td><span class="sync-status <%= log.status %>"><i class="bi bi-circle-fill"></i><%= log.status %></span></td>
+            <td><%= log.recordsFetched %></td><td><%= log.recordsCreated %></td><td><%= log.recordsUpdated %></td><td class="<%= log.recordsFailed ? 'text-danger fw-bold' : '' %>"><%= log.recordsFailed %></td>
+            <td><%= duration === null ? 'Running' : `${duration}s` %></td>
+          </tr>
+        <% }) } else { %><tr><td colspan="8" class="text-center text-muted py-5">No synchronization attempts have been recorded.</td></tr><% } %>
+      </tbody>
+    </table>
+  </div>
+  <% if (pagination.pages > 1) { %>
+    <nav class="d-flex justify-content-end gap-2 mt-3" aria-label="Sync log pages">
+      <% if (pagination.page > 1) { %><a class="btn btn-sm btn-outline-secondary" href="?page=<%= pagination.page - 1 %>">Previous</a><% } %>
+      <span class="btn btn-sm disabled">Page <%= pagination.page %> of <%= pagination.pages %></span>
+      <% if (pagination.page < pagination.pages) { %><a class="btn btn-sm btn-outline-secondary" href="?page=<%= pagination.page + 1 %>">Next</a><% } %>
+    </nav>
+  <% } %>
+</section>

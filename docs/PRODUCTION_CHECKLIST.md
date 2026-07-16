@@ -1,0 +1,21 @@
+# Production checklist
+
+- [ ] HTTPS is enforced and the public URL redirects HTTP to HTTPS.
+- [ ] MongoDB Atlas uses a dedicated least-privilege user and restricted network rules.
+- [ ] Every required environment variable is configured; no `.env` file is committed.
+- [ ] `SESSION_SECRET` is unique, random, at least 32 characters, and stored only in the host secret manager.
+- [ ] Hot Prospector API UID, API key, and optional web cookie are valid and backend-only.
+- [ ] The initial administrator was seeded with a unique strong password and the seed password was rotated or removed from deployment variables afterward.
+- [ ] Every clinic is mapped to the correct campaign and group.
+- [ ] Every clinic uses the verified IANA timezone.
+- [ ] Exactly one cron strategy is enabled and scheduled locks are visible in MongoDB.
+- [ ] `/health` and `/ready` return `200` under normal operation.
+- [ ] Hot Prospector connection testing and a manual sync succeed.
+- [ ] Leads, calls, answered calls, conversations, bookings, speed to lead, talk time, and gap time were reconciled for representative dates.
+- [ ] Valid and excluded appointment statuses match the client account terminology.
+- [ ] CSV and Excel exports were opened and checked for headings, filters, percentages, durations, and formulas.
+- [ ] Atlas automated backups, retention, alerts, and a tested restore procedure are configured.
+- [ ] Hosting monitoring alerts on readiness, 5xx responses, failed jobs, database failures, and API failures.
+- [ ] Audit logs record login, logout, failed login, mapping changes, syncs, exports, and settings actions.
+- [ ] Production logs contain no passwords, API credentials, session cookies, or access tokens.
+- [ ] `npm test`, `npm run lint`, and `npm audit` are reviewed before release.

@@ -1,0 +1,40 @@
+<section class="auth-card" aria-labelledby="login-heading">
+  <div class="mobile-brand d-lg-none">
+    <span class="brand-mark"><i class="bi bi-activity" aria-hidden="true"></i></span>
+    <strong>ClinicPulse</strong>
+  </div>
+  <p class="eyebrow">Administrator access</p>
+  <h2 id="login-heading">Welcome back</h2>
+  <p class="auth-subtitle">Sign in to continue to your clinic performance dashboard.</p>
+
+  <% if (typeof loggedOut !== 'undefined' && loggedOut) { %>
+    <div class="alert alert-success" role="alert"><i class="bi bi-check-circle-fill me-2"></i>You have been logged out securely.</div>
+  <% } %>
+
+  <% if (errors.length) { %>
+    <div class="alert alert-danger" role="alert">
+      <% errors.forEach((error) => { %><div><i class="bi bi-exclamation-circle-fill me-2"></i><%= error.msg %></div><% }) %>
+    </div>
+  <% } %>
+
+  <form action="/login" method="post" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="mb-3">
+      <label class="form-label" for="email">Email address</label>
+      <div class="input-icon-wrap">
+        <i class="bi bi-envelope" aria-hidden="true"></i>
+        <input class="form-control" id="email" name="email" type="email" value="<%= formData.email %>" autocomplete="username" maxlength="254" required autofocus>
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="form-label" for="password">Password</label>
+      <div class="input-icon-wrap password-wrap">
+        <i class="bi bi-lock" aria-hidden="true"></i>
+        <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required>
+        <button class="password-toggle" type="button" data-password-toggle aria-label="Show password"><i class="bi bi-eye"></i></button>
+      </div>
+    </div>
+    <button class="btn btn-primary w-100 login-button" type="submit">Sign in <i class="bi bi-arrow-right ms-2"></i></button>
+  </form>
+  <p class="security-note"><i class="bi bi-shield-check" aria-hidden="true"></i>Your session is encrypted and securely stored.</p>
+</section>

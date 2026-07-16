@@ -1,0 +1,40 @@
+<%- include('../partials/filter-bar') %>
+
+<div class="dashboard-alert d-none" data-page-alert role="alert"></div>
+<section class="kpi-grid" aria-label="Agency key performance indicators">
+  <% [
+    ['newLeads','New leads','bi-person-plus','indigo','Total new leads in the selected period'],
+    ['outboundDials','Total dials','bi-telephone-outbound','blue','Unique outbound dial records'],
+    ['validBookings','Total bookings','bi-calendar-check','green','Booked, confirmed, or scheduled appointments'],
+    ['leadToBookingRate','Lead conversion','bi-graph-up-arrow','green','Valid bookings divided by new leads'],
+    ['averageSpeedToLeadSeconds','Average speed to lead','bi-stopwatch','amber','Average time from lead creation to first outbound dial'],
+    ['medianSpeedToLeadSeconds','Median speed to lead','bi-hourglass-split','amber','Middle speed-to-lead value'],
+    ['talkTimeSeconds','Total talk time','bi-mic','purple','Total synchronized talk time'],
+    ['totalGapTimeSeconds','Total gap time','bi-pause-circle','rose','Time between consecutive CSR calls'],
+    ['dialsPerLead','Avg. dials per lead','bi-telephone-forward','blue','Outbound dials divided by unique leads dialed'],
+    ['conversationRate','Conversation rate','bi-chat-square-dots','green','Meaningful conversations divided by answered calls'],
+    ['talkTimeUtilization','Talk-time utilization','bi-pie-chart','purple','Talk time divided by working time'],
+    ['averageTalkTimePerConversation','Avg. talk / conversation','bi-clock-history','amber','Total talk seconds divided by meaningful conversations']
+  ].forEach(([key,label,icon,tone,tooltip]) => { %>
+    <article class="kpi-card" data-kpi="<%= key %>" tabindex="0" data-bs-toggle="tooltip" data-bs-title="<%= tooltip %>">
+      <span class="kpi-icon <%= tone %>"><i class="bi <%= icon %>"></i></span>
+      <div><span><%= label %></span><strong class="skeleton-text" data-kpi-value>Loading</strong><small data-kpi-note>Selected period</small></div>
+    </article>
+  <% }) %>
+</section>
+
+<section class="chart-dashboard-grid mt-4">
+  <% [
+    ['leadsBookingsChart','Leads and bookings trend','New leads compared with valid bookings over time','wide'],
+    ['dialsConversationsChart','Dials and conversations trend','Outbound activity and meaningful conversations','wide'],
+    ['clinicConversionChart','Clinic conversion comparison','Lead-to-booking conversion across clinics',''],
+    ['speedDistributionChart','Speed-to-lead distribution','Percentage of contacted leads by response window',''],
+    ['callsByHourChart','Calls by hour of day','Outbound dial volume by local clinic hour',''],
+    ['csrBookingChart','Booking performance by CSR','Valid bookings and booking ratios by team member','']
+  ].forEach(([id,title,description,size]) => { %>
+    <article class="report-card <%= size %>">
+      <div class="report-card-head"><div><h2><%= title %></h2><p><%= description %></p></div><button class="icon-button" type="button" data-bs-toggle="tooltip" data-bs-title="Chart values follow the selected filters" aria-label="Chart information"><i class="bi bi-info-circle"></i></button></div>
+      <div class="chart-stage loading" data-chart-stage><canvas id="<%= id %>" role="img" aria-label="<%= title %>"></canvas><div class="chart-skeleton"><span></span><span></span><span></span><span></span></div><div class="chart-empty d-none"><i class="bi bi-bar-chart"></i><span>No data for this range</span></div></div>
+    </article>
+  <% }) %>
+</section>

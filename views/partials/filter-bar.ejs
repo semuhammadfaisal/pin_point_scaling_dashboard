@@ -1,0 +1,24 @@
+<section class="filter-panel" data-filter-bar>
+  <div class="filter-panel-head">
+    <div><i class="bi bi-funnel" aria-hidden="true"></i><strong>Report filters</strong><span data-filter-summary>Choose a date range</span></div>
+    <button class="btn btn-sm btn-light d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#globalFilters" aria-expanded="false" aria-controls="globalFilters"><i class="bi bi-sliders"></i><span>Filters</span></button>
+  </div>
+  <div class="collapse d-lg-block" id="globalFilters">
+    <form class="filter-form" data-filter-form>
+      <div class="filter-field"><label for="filter-start-date">Start date</label><input class="form-control" type="date" id="filter-start-date" name="startDate" required></div>
+      <div class="filter-field"><label for="filter-end-date">End date</label><input class="form-control" type="date" id="filter-end-date" name="endDate" required></div>
+      <div class="filter-field"><label for="filter-clinic">Clinic</label><select class="form-select" id="filter-clinic" name="clinicId"><option value="">All clinics</option><% filterOptions.clinics.forEach((clinic) => { %><option value="<%= clinic.id %>"><%= clinic.name %></option><% }) %></select></div>
+      <div class="filter-field"><label for="filter-csr">CSR</label><select class="form-select" id="filter-csr" name="csrId"><option value="">All CSRs</option><% filterOptions.csrs.forEach((csr) => { %><option value="<%= csr.id %>" data-clinic-ids="<%= csr.clinicIds.join(',') %>"><%= csr.name %></option><% }) %></select></div>
+      <div class="filter-field"><label for="filter-campaign">Campaign</label><select class="form-select" id="filter-campaign" name="campaignId"><option value="">All campaigns</option><% filterOptions.campaigns.forEach((campaign) => { %><option value="<%= campaign.id %>"><%= campaign.name %></option><% }) %></select></div>
+      <div class="filter-actions"><button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i>Apply</button><button class="btn btn-outline-secondary" type="button" data-filter-reset>Reset</button></div>
+    </form>
+    <div class="quick-filters" aria-label="Quick date ranges">
+      <span>Quick range</span>
+      <button type="button" data-quick-range="today">Today</button>
+      <button type="button" data-quick-range="yesterday">Yesterday</button>
+      <button type="button" data-quick-range="last7">Last 7 days</button>
+      <button type="button" data-quick-range="thisMonth">This month</button>
+      <button type="button" data-quick-range="lastMonth">Last month</button>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,59 @@
+{
+  "name": "clinic-performance-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-ready clinic performance dashboard foundation",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "seed:admin": "node scripts/seedAdmin.js",
+    "sync:hot-prospector": "node scripts/syncHotProspector.js",
+    "migrate:clinic-locations": "node scripts/migrateClinicLocations.js",
+    "job:recent": "node scripts/runJob.js recent",
+    "job:metrics": "node scripts/runJob.js metrics",
+    "job:nightly": "node scripts/runJob.js nightly",
+    "job:recalculate": "node scripts/runJob.js recalculate",
+    "job:precompute": "node scripts/runJob.js precompute",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "lint": "eslint ."
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "bcrypt": "^6.0.0",
+    "bootstrap": "^5.3.3",
+    "chart.js": "^4.4.7",
+    "compression": "^1.7.5",
+    "connect-mongo": "^5.1.0",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "express-ejs-layouts": "^2.5.1",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.5.2",
+    "express-session": "^1.18.1",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.0.0",
+    "mongodb": "^6.21.0",
+    "mongoose": "^8.9.3",
+    "morgan": "^1.10.0",
+    "node-cron": "^4.6.0",
+    "xss": "^1.0.15"
+  },
+  "devDependencies": {
+    "eslint": "^10.7.0",
+    "globals": "^17.7.0",
+    "jest": "^30.4.2",
+    "mongodb-memory-server": "^11.2.0",
+    "nodemon": "^3.1.9",
+    "supertest": "^7.2.2"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
+}

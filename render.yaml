@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: clinicpulse-dashboard
+    runtime: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SYNC_CRON_ENABLED
+        value: true
+      - key: MONGODB_URI
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ADMIN_NAME
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: HOT_PROSPECTOR_API_UID
+        sync: false
+      - key: HOT_PROSPECTOR_API_KEY
+        sync: false
+      - key: HOT_PROSPECTOR_WEB_COOKIE
+        sync: false

@@ -1,0 +1,18 @@
+<%- include('../partials/filter-bar') %>
+<div class="dashboard-alert d-none" data-page-alert role="alert"></div>
+<section class="report-card table-report-card">
+  <div class="table-toolbar">
+    <div><h2>Clinic performance</h2><p>Compare operational and conversion performance across locations.</p></div>
+    <div class="table-tools"><label class="search-control"><span class="visually-hidden">Search clinics</span><i class="bi bi-search"></i><input class="form-control" type="search" placeholder="Search clinics" data-table-search></label><button class="btn btn-outline-secondary" type="button" data-export><i class="bi bi-download me-2"></i>Export CSV</button></div>
+  </div>
+  <div class="table-responsive">
+    <table class="table dashboard-table align-middle">
+      <thead><tr>
+        <% [['name','Clinic'],['newLeads','Leads'],['outboundDials','Dials'],['answeredCalls','Answered'],['conversations','Conversations'],['validBookings','Bookings'],['leadToBookingRate','Lead conversion'],['conversationToBookingRate','Conversation conversion'],['dialsPerLead','Dials / lead'],['conversationRate','Conversation rate'],['averageSpeedToLeadSeconds','Avg. speed'],['talkTimeSeconds','Talk time'],['talkTimeUtilization','Talk utilization'],['averageTalkTimePerConversation','Avg. talk / conversation'],['totalGapTimeSeconds','Gap time']].forEach(([key,label]) => { %><th><button type="button" data-sort="<%= key %>"><%= label %><i class="bi bi-arrow-down-up"></i></button></th><% }) %>
+        <th><span class="visually-hidden">Actions</span></th>
+      </tr></thead>
+      <tbody data-table-body><% for (let i = 0; i < 5; i += 1) { %><tr class="skeleton-row"><td colspan="16"><span></span></td></tr><% } %></tbody>
+    </table>
+  </div>
+  <div class="table-footer"><span data-table-count>Loading clinics…</span><nav class="pagination-controls" data-pagination aria-label="Clinic table pages"></nav></div>
+</section>
