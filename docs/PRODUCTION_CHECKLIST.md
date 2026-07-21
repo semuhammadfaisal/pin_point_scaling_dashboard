@@ -19,3 +19,11 @@
 - [ ] Audit logs record login, logout, failed login, mapping changes, syncs, exports, and settings actions.
 - [ ] Production logs contain no passwords, API credentials, session cookies, or access tokens.
 - [ ] `npm test`, `npm run lint`, and `npm audit` are reviewed before release.
+- [ ] A sanitized HAR contract set covers single-day, date-range, campaign, clinic/location, and CSR filters.
+- [ ] Every visible clinic has approved aliases plus verified mapping and IANA timezone in `/settings/clinics`.
+- [ ] `METRICS_V2_BACKFILL_START_DATE` is the earliest date available from Hot Prospector.
+- [ ] Every all-history v2 checkpoint is complete and no page set is truncated or duplicated.
+- [ ] `/settings/data-quality` has no open critical issues and every reconciled day is certified.
+- [ ] Unsupported conversation, talk-time, working-time, or gap-time values display `N/A`, not zero.
+- [ ] Five-minute freshness and two-second warm p95 targets were measured with production-sized data.
+- [ ] V2 rollback to `METRICS_DATA_VERSION=v1` was rehearsed before setting `METRICS_V2_ROLLBACK_VERIFIED=true`.

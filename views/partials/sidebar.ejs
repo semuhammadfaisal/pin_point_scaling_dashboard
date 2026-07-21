@@ -1,25 +1,24 @@
 <aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="adminSidebar" aria-labelledby="sidebarLabel">
   <div class="offcanvas-header">
     <div class="sidebar-brand-wrap">
-      <a class="brand" href="/dashboard" id="sidebarLabel" aria-label="ClinicPulse dashboard">
-        <span class="brand-mark"><i class="bi bi-activity" aria-hidden="true"></i></span>
-        <span>Clinic<span>Pulse</span></span>
+      <a class="brand" href="/dashboard" id="sidebarLabel" aria-label="Pinpoint Scaling dashboard">
+        <img class="brand-logo" src="/brand-assets/67bbfaeacd6e05ec202385da_image%206-Photoroom%201.svg" alt="Pinpoint Scaling">
       </a>
-      <span class="brand-subtitle">Performance command center</span>
+      <span class="brand-subtitle"><i aria-hidden="true"></i> Growth performance center</span>
     </div>
     <button type="button" class="btn-close btn-close-white d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebar" aria-label="Close navigation"></button>
   </div>
 
   <div class="offcanvas-body d-flex flex-column p-0">
     <nav class="sidebar-nav" aria-label="Primary navigation">
-      <p class="nav-section-label"><span>Workspace</span></p>
+      <p class="nav-section-label"><span>Performance</span></p>
       <a class="sidebar-link <%= currentPath === '/dashboard' ? 'active' : '' %>" href="/dashboard" <%- currentPath === '/dashboard' ? 'aria-current="page"' : '' %>>
-        <span class="sidebar-icon"><i class="bi bi-grid-1x2-fill" aria-hidden="true"></i></span>
-        <span class="sidebar-link-copy"><strong>Dashboard</strong><small>Agency overview</small></span>
+        <span class="sidebar-icon"><i class="bi bi-grid" aria-hidden="true"></i></span>
+        <span class="sidebar-link-copy"><strong>Overview</strong><small>Growth at a glance</small></span>
         <i class="bi bi-chevron-right sidebar-link-arrow" aria-hidden="true"></i>
       </a>
       <a class="sidebar-link <%= currentPath.startsWith('/clinics') ? 'active' : '' %>" href="/clinics" <%- currentPath.startsWith('/clinics') ? 'aria-current="page"' : '' %>>
-        <span class="sidebar-icon"><i class="bi bi-hospital-fill" aria-hidden="true"></i></span>
+        <span class="sidebar-icon"><i class="bi bi-buildings" aria-hidden="true"></i></span>
         <span class="sidebar-link-copy"><strong>Clinics</strong><small>Location performance</small></span>
         <i class="bi bi-chevron-right sidebar-link-arrow" aria-hidden="true"></i>
       </a>
@@ -29,31 +28,23 @@
         <i class="bi bi-chevron-right sidebar-link-arrow" aria-hidden="true"></i>
       </a>
       <a class="sidebar-link <%= currentPath === '/booking-ratios' ? 'active' : '' %>" href="/booking-ratios" <%- currentPath === '/booking-ratios' ? 'aria-current="page"' : '' %>>
-        <span class="sidebar-icon"><i class="bi bi-table" aria-hidden="true"></i></span>
+        <span class="sidebar-icon"><i class="bi bi-calendar2-check" aria-hidden="true"></i></span>
         <span class="sidebar-link-copy"><strong>Booking Ratios</strong><small>CSR and clinic matrix</small></span>
         <i class="bi bi-chevron-right sidebar-link-arrow" aria-hidden="true"></i>
       </a>
       <a class="sidebar-link <%= currentPath === '/reports' ? 'active' : '' %>" href="/reports" <%- currentPath === '/reports' ? 'aria-current="page"' : '' %>>
-        <span class="sidebar-icon"><i class="bi bi-bar-chart-fill" aria-hidden="true"></i></span>
+        <span class="sidebar-icon"><i class="bi bi-bar-chart" aria-hidden="true"></i></span>
         <span class="sidebar-link-copy"><strong>Reports</strong><small>Exports and trends</small></span>
         <i class="bi bi-chevron-right sidebar-link-arrow" aria-hidden="true"></i>
       </a>
 
       <p class="nav-section-label nav-section-spaced"><span>Administration</span></p>
       <a class="sidebar-link <%= currentPath.startsWith('/settings') ? 'active' : '' %>" href="/settings" <%- currentPath.startsWith('/settings') ? 'aria-current="page"' : '' %>>
-        <span class="sidebar-icon"><i class="bi bi-gear-fill" aria-hidden="true"></i></span>
+        <span class="sidebar-icon"><i class="bi bi-sliders2" aria-hidden="true"></i></span>
         <span class="sidebar-link-copy"><strong>Settings</strong><small>Integrations and mappings</small></span>
         <i class="bi bi-chevron-right sidebar-link-arrow" aria-hidden="true"></i>
       </a>
     </nav>
 
-    <div class="sidebar-footer mt-auto">
-      <div class="system-status">
-        <span class="status-visual" aria-hidden="true"><span class="status-dot"></span></span>
-        <div><strong>System online</strong><small>All services operational</small></div>
-        <i class="bi bi-check-circle-fill status-check" aria-hidden="true"></i>
-      </div>
-      <p class="sidebar-security"><i class="bi bi-shield-check" aria-hidden="true"></i> Secure admin workspace</p>
-    </div>
   </div>
 </aside>

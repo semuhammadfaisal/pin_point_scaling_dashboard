@@ -1,0 +1,48 @@
+<%- include('../partials/settings-nav') %>
+
+<section class="row g-3 mb-4">
+  <div class="col-md-4"><article class="content-card h-100"><small>Verified mappings</small><h2 class="mt-2"><%= mappings.verified %> / <%= mappings.total %></h2><p class="text-muted mb-0">Both source mapping and timezone verified</p></article></div>
+  <div class="col-md-4"><article class="content-card h-100"><small>Open quality issues</small><h2 class="mt-2"><%= issues.length %></h2><p class="text-muted mb-0">Critical issues block certification</p></article></div>
+  <div class="col-md-4"><article class="content-card h-100"><small>Recent snapshots</small><h2 class="mt-2"><%= snapshots.length %></h2><p class="text-muted mb-0">Sanitized immutable source captures</p></article></div>
+</section>
+
+<section class="content-card mb-4">
+  <div class="card-heading"><div><h2>Historical v2 backfill</h2><p>Runs in parallel and never changes the v1 collections.</p></div></div>
+  <form action="/settings/data-quality/backfill" method="post" class="row g-3 mt-1">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="col-md-4"><label class="form-label" for="backfill-start">Start date</label><input class="form-control" id="backfill-start" type="date" name="startDate" required></div>
+    <div class="col-md-4"><label class="form-label" for="backfill-end">End date</label><input class="form-control" id="backfill-end" type="date" name="endDate" value="<%= new Date().toISOString().slice(0, 10) %>" required></div>
+    <div class="col-md-4 d-flex align-items-end"><button class="btn btn-primary" type="submit"><i class="bi bi-database-down me-2"></i>Queue backfill</button></div>
+  </form>
+</section>
+
+<section class="content-card mb-4">
+  <div class="card-heading"><div><h2>Reconcile a date range</h2><p>Compares authoritative source totals with canonical materialized facts.</p></div></div>
+  <form action="/settings/data-quality/reconcile" method="post" class="row g-3 mt-1">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="col-md-4"><label class="form-label" for="reconcile-start">Start date</label><input class="form-control" id="reconcile-start" type="date" name="startDate" required></div>
+    <div class="col-md-4"><label class="form-label" for="reconcile-end">End date</label><input class="form-control" id="reconcile-end" type="date" name="endDate" required></div>
+    <div class="col-md-4 d-flex align-items-end"><button class="btn btn-outline-primary" type="submit"><i class="bi bi-check2-circle me-2"></i>Queue reconciliation</button></div>
+  </form>
+</section>
+
+<section class="content-card mb-4">
+  <div class="card-heading"><div><h2>Open data-quality issues</h2><p>Unresolved critical issues prevent the v2 cutover.</p></div></div>
+  <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Severity</th><th>Category</th><th>Message</th><th>Last seen</th></tr></thead><tbody>
+    <% if (issues.length) { issues.forEach((issue) => { %><tr><td><span class="status-badge <%= issue.severity === 'critical' ? 'inactive' : 'active' %>"><%= issue.severity %></span></td><td><code><%= issue.category %></code></td><td><%= issue.message %></td><td><%= issue.lastSeenAt.toLocaleString() %></td></tr><% }) } else { %><tr><td colspan="4" class="text-center text-muted py-4">No open quality issues.</td></tr><% } %>
+  </tbody></table></div>
+</section>
+
+<section class="content-card mb-4">
+  <div class="card-heading"><div><h2>Recent reconciliation</h2><p>Exact expected-versus-actual comparisons.</p></div></div>
+  <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Range</th><th>Status</th><th>Differences</th><th>Checked</th></tr></thead><tbody>
+    <% if (reconciliations.length) { reconciliations.forEach((row) => { %><tr><td><%= row.filters.startDate %> to <%= row.filters.endDate %></td><td><span class="status-badge <%= row.status === 'certified' ? 'active' : 'inactive' %>"><%= row.status %></span></td><td><%= row.metrics.filter((metric) => !metric.matches).map((metric) => `${metric.metric}: ${metric.actual ?? 'N/A'} vs ${metric.expected ?? 'N/A'}`).join(' · ') || 'Exact match' %></td><td><%= row.checkedAt.toLocaleString() %></td></tr><% }) } else { %><tr><td colspan="4" class="text-center text-muted py-4">No reconciliation runs yet.</td></tr><% } %>
+  </tbody></table></div>
+</section>
+
+<section class="content-card">
+  <div class="card-heading"><div><h2>Backfill checkpoints</h2><p>Completed days are skipped safely when a job resumes.</p></div></div>
+  <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Checkpoint</th><th>Status</th><th>Fetched</th><th>Expected</th><th>Updated</th></tr></thead><tbody>
+    <% if (checkpoints.length) { checkpoints.forEach((row) => { %><tr><td><code><%= row.checkpointKey %></code></td><td><%= row.status %></td><td><%= row.recordsFetched %></td><td><%= row.expectedRecords ?? 'Unknown' %></td><td><%= row.updatedAt.toLocaleString() %></td></tr><% }) } else { %><tr><td colspan="5" class="text-center text-muted py-4">No v2 backfill has run.</td></tr><% } %>
+  </tbody></table></div>
+</section>

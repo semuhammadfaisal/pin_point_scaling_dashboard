@@ -39,6 +39,8 @@ function validateEnvironment() {
     'HOT_PROSPECTOR_TIMEOUT_MS', 'HOT_PROSPECTOR_RETRIES', 'LOGIN_RATE_LIMIT_WINDOW_MS',
     'LOGIN_RATE_LIMIT_MAX', 'API_RATE_LIMIT_WINDOW_MS', 'API_RATE_LIMIT_MAX', 'REQUEST_TIMEOUT_MS',
     'CRON_LOCK_TTL_MS', 'MONGODB_MAX_POOL_SIZE', 'MONGODB_MIN_POOL_SIZE', 'METRICS_CACHE_TTL_MS',
+    'METRICS_V2_STALE_AFTER_MS', 'METRICS_V2_BACKFILL_CHUNK_DAYS', 'HOT_PROSPECTOR_ANSWER_THRESHOLD_SECONDS',
+    'HOT_PROSPECTOR_OVERVIEW_CACHE_TTL_MS',
   ];
   positiveNumbers.forEach((key) => {
     if (process.env[key] !== undefined && (!Number.isFinite(Number(process.env[key])) || Number(process.env[key]) < 0)) {
@@ -51,7 +53,7 @@ function validateEnvironment() {
       throw new Error(`${key} must be a positive integer.`);
     }
   }
-  if (Number(process.env.METRICS_DEFAULT_RANGE_DAYS || 30) > Number(process.env.METRICS_MAX_RANGE_DAYS || 366)) {
+  if (Number(process.env.METRICS_DEFAULT_RANGE_DAYS || 1) > Number(process.env.METRICS_MAX_RANGE_DAYS || 366)) {
     throw new Error('METRICS_DEFAULT_RANGE_DAYS cannot exceed METRICS_MAX_RANGE_DAYS.');
   }
 
@@ -94,13 +96,24 @@ module.exports = Object.freeze({
   },
   metrics: {
     maxRangeDays: Number(process.env.METRICS_MAX_RANGE_DAYS || 366),
-    defaultRangeDays: Number(process.env.METRICS_DEFAULT_RANGE_DAYS || 30),
+    defaultRangeDays: Number(process.env.METRICS_DEFAULT_RANGE_DAYS || 1),
     validBookingStatuses: String(process.env.METRICS_VALID_BOOKING_STATUSES || 'booked,confirmed,scheduled')
       .split(',').map((status) => status.trim().toLowerCase()).filter(Boolean),
     excludedBookingStatuses: String(process.env.METRICS_EXCLUDED_BOOKING_STATUSES || 'cancelled,deleted,no-show')
       .split(',').map((status) => status.trim().toLowerCase()).filter(Boolean),
     dailyCron: process.env.METRICS_CRON_DAILY || '10 3 * * *',
     cacheTtlMs: Number(process.env.METRICS_CACHE_TTL_MS || 30000),
+    dataVersion: String(process.env.METRICS_DATA_VERSION || 'v1').toLowerCase() === 'v2' ? 'v2' : 'v1',
+    v2StaleAfterMs: Number(process.env.METRICS_V2_STALE_AFTER_MS || 10 * 60 * 1000),
+    v2BackfillStartDate: String(process.env.METRICS_V2_BACKFILL_START_DATE || '').trim(),
+    v2BackfillChunkDays: Number(process.env.METRICS_V2_BACKFILL_CHUNK_DAYS || 1),
+    answerThresholdSeconds: Number(process.env.HOT_PROSPECTOR_ANSWER_THRESHOLD_SECONDS || 35),
+    answerThresholdVerified: process.env.HOT_PROSPECTOR_ANSWER_THRESHOLD_VERIFIED === 'true',
+    overviewCacheTtlMs: Number(process.env.HOT_PROSPECTOR_OVERVIEW_CACHE_TTL_MS || 1000),
+    v2PipelineEnabled: process.env.METRICS_V2_PIPELINE_ENABLED === 'true',
+    v2RecentCron: process.env.METRICS_V2_RECENT_CRON || '2-59/5 * * * *',
+    v2ReconcileCron: process.env.METRICS_V2_RECONCILE_CRON || '30 3 * * *',
+    v2RollbackVerified: process.env.METRICS_V2_ROLLBACK_VERIFIED === 'true',
   },
   security: {
     loginWindowMs: Number(process.env.LOGIN_RATE_LIMIT_WINDOW_MS || 900000),

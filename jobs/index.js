@@ -5,6 +5,8 @@ const syncService = require('../services/hotProspectorSyncService');
 const metricsService = require('../services/metricsService');
 const lockService = require('../services/jobLockService');
 const logger = require('../utils/logger');
+const v2SyncService = require('../services/v2SyncService');
+const v2ReconciliationService = require('../services/v2ReconciliationService');
 
 let scheduledJobs = [];
 
@@ -49,6 +51,16 @@ function startJobs() {
     schedule(env.cron.recalculate, 'recalculate_metrics', () => syncService.recalculateDailyMetrics(7)),
     schedule(env.metrics.dailyCron, 'precompute_daily_clinic_metrics', () => metricsService.precomputeDailyMetrics()),
   ];
+  if (env.metrics.v2PipelineEnabled) {
+    scheduledJobs.push(
+      schedule(env.metrics.v2RecentCron, 'v2_sync_recent', v2SyncService.syncRecent),
+      schedule(env.metrics.v2ReconcileCron, 'v2_reconcile_recent', () => {
+        const end = new Date();
+        const start = new Date(end.getTime() - 7 * 86400000);
+        return v2ReconciliationService.reconcileRange(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10));
+      })
+    );
+  }
   return scheduledJobs;
 }
 

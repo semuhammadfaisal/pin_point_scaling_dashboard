@@ -1,15 +1,27 @@
 <%- include('../partials/header') %>
 <main class="auth-shell">
   <div class="auth-brand-panel">
-    <a class="brand brand-light" href="/login">
-      <span class="brand-mark"><i class="bi bi-activity" aria-hidden="true"></i></span>
-      <span>Clinic<span>Pulse</span></span>
-    </a>
-    <div class="auth-message">
-      <p class="eyebrow text-white-50">Better insight. Better care.</p>
-      <h1>See the pulse of every clinic.</h1>
-      <p>One secure workspace for operational visibility, team performance, and smarter decisions.</p>
+    <div class="auth-brand-header">
+      <a class="brand brand-light" href="/login">
+        <img class="brand-logo auth-brand-logo" src="/brand-assets/67bbfaeacd6e05ec202385da_image%206-Photoroom%201.svg" alt="Pinpoint Scaling">
+      </a>
+      <span class="auth-suite-label">Performance dashboard</span>
     </div>
+    <div class="auth-message">
+      <span class="auth-kicker"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i> Built for clinic growth teams</span>
+      <h1>Every clinic.<br><span>One clear view.</span></h1>
+      <p>Track the patient journey from first lead to booked appointment—and turn daily performance into measurable growth.</p>
+      <div class="auth-journey" aria-label="Pinpoint Scaling growth framework">
+        <% ['Attract', 'Automate', 'Convert', 'Scale'].forEach((stage, index) => { %>
+          <span><small>0<%= index + 1 %></small><strong><%= stage %></strong></span>
+        <% }) %>
+      </div>
+      <div class="auth-proof-card">
+        <span class="auth-proof-icon"><i class="bi bi-stars" aria-hidden="true"></i></span>
+        <div><strong>Growth, without the guesswork.</strong><small>Qualified patients, bookings, response time, and team performance in one place.</small></div>
+      </div>
+    </div>
+    <p class="auth-panel-footer"><i class="bi bi-shield-check" aria-hidden="true"></i> Secure access for authorized team members</p>
     <div class="auth-orb auth-orb-one"></div>
     <div class="auth-orb auth-orb-two"></div>
   </div>

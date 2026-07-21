@@ -16,6 +16,7 @@ const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const metricsRoutes = require('./routes/metricsRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const dataQualityRoutes = require('./routes/dataQualityRoutes');
 const csrfProtection = require('./middleware/csrf');
 const inputSanitizer = require('./middleware/inputSanitizer');
 const requestTimeout = require('./middleware/requestTimeout');
@@ -28,6 +29,7 @@ const { startJobs, stopJobs } = require('./jobs');
 const systemController = require('./controllers/systemController');
 const runtimeState = require('./utils/runtimeState');
 const logger = require('./utils/logger');
+const v2CutoverService = require('./services/v2CutoverService');
 
 const app = express();
 
@@ -76,6 +78,7 @@ app.use(express.json({ limit: '20kb' }));
 app.use(mongoSanitize({ replaceWith: '_' }));
 app.use(inputSanitizer);
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: env.isProduction ? '7d' : 0 }));
+app.use('/brand-assets', express.static(path.join(__dirname, 'assets', 'images'), { maxAge: env.isProduction ? '30d' : 0 }));
 app.get('/favicon.ico', (_req, res) => res.redirect(301, '/favicon.svg'));
 
 app.use(
@@ -107,6 +110,7 @@ app.use(csrfProtection);
 app.use('/api', apiRateLimiter);
 app.use(authRoutes);
 app.use(metricsRoutes);
+app.use(dataQualityRoutes);
 app.use(reportRoutes);
 app.use(dashboardRoutes);
 app.use(metricsErrorHandler);
@@ -117,6 +121,7 @@ let server;
 
 async function startServer() {
   await connectDatabase();
+  if (env.metrics.dataVersion === 'v2') await v2CutoverService.assertReady();
   startJobs();
   server = app.listen(env.port, () => {
     logger.info('server_started', { port: env.port, environment: env.nodeEnv });

@@ -1,6 +1,6 @@
 const DailyAgentMetric = require('../models/DailyAgentMetric');
 const mongoose = require('mongoose');
-const metricsService = require('./metricsService');
+const metricsService = require('./metricsFacadeService');
 const { getReportDefinition } = require('../config/reportDefinitions');
 
 function nextDate(value) {

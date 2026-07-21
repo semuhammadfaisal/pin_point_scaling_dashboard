@@ -6,10 +6,12 @@
     <main class="page-content">
       <%- include('../partials/flash') %>
       <div class="page-heading">
-        <div>
-          <p class="eyebrow">ClinicPulse workspace</p>
-          <h1><%= pageTitle %></h1>
-          <p><%= pageDescription %></p>
+        <div class="page-heading-main">
+          <span class="page-title-mark" aria-hidden="true"></span>
+          <div>
+            <h1><%= pageTitle %></h1>
+            <% if (pageDescription) { %><p><%= pageDescription %></p><% } %>
+          </div>
         </div>
         <div class="date-chip"><i class="bi bi-calendar3" aria-hidden="true"></i><span data-current-date>Today</span></div>
       </div>

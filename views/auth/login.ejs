@@ -1,11 +1,15 @@
 <section class="auth-card" aria-labelledby="login-heading">
   <div class="mobile-brand d-lg-none">
-    <span class="brand-mark"><i class="bi bi-activity" aria-hidden="true"></i></span>
-    <strong>ClinicPulse</strong>
+    <img class="brand-logo mobile-brand-logo" src="/brand-assets/67bbfaeacd6e05ec202385da_image%206-Photoroom%201.svg" alt="Pinpoint Scaling">
   </div>
-  <p class="eyebrow">Administrator access</p>
-  <h2 id="login-heading">Welcome back</h2>
-  <p class="auth-subtitle">Sign in to continue to your clinic performance dashboard.</p>
+  <div class="auth-card-heading">
+    <span class="auth-login-icon"><i class="bi bi-person-lock" aria-hidden="true"></i></span>
+    <div>
+      <p class="eyebrow">Secure workspace</p>
+      <h2 id="login-heading">Welcome back</h2>
+      <p class="auth-subtitle">Sign in to access your performance dashboard.</p>
+    </div>
+  </div>
 
   <% if (typeof loggedOut !== 'undefined' && loggedOut) { %>
     <div class="alert alert-success" role="alert"><i class="bi bi-check-circle-fill me-2"></i>You have been logged out securely.</div>
@@ -27,14 +31,20 @@
       </div>
     </div>
     <div class="mb-4">
-      <label class="form-label" for="password">Password</label>
+      <div class="auth-field-heading">
+        <label class="form-label" for="password">Password</label>
+        <span>Case sensitive</span>
+      </div>
       <div class="input-icon-wrap password-wrap">
         <i class="bi bi-lock" aria-hidden="true"></i>
         <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required>
         <button class="password-toggle" type="button" data-password-toggle aria-label="Show password"><i class="bi bi-eye"></i></button>
       </div>
     </div>
-    <button class="btn btn-primary w-100 login-button" type="submit">Sign in <i class="bi bi-arrow-right ms-2"></i></button>
+    <button class="btn btn-primary w-100 login-button" type="submit"><span>Sign in to dashboard</span><i class="bi bi-arrow-right" aria-hidden="true"></i></button>
   </form>
-  <p class="security-note"><i class="bi bi-shield-check" aria-hidden="true"></i>Your session is encrypted and securely stored.</p>
+  <div class="auth-security-row">
+    <span><i class="bi bi-shield-lock" aria-hidden="true"></i> Encrypted session</span>
+    <span><i class="bi bi-clock-history" aria-hidden="true"></i> Automatic timeout</span>
+  </div>
 </section>

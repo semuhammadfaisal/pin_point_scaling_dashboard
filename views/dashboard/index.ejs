@@ -1,39 +1,50 @@
 <%- include('../partials/filter-bar') %>
 
 <div class="dashboard-alert d-none" data-page-alert role="alert"></div>
+<div class="live-update-status connecting" data-live-update-status role="status" aria-live="polite">
+  <span class="live-update-dot" aria-hidden="true"></span>
+  <span data-live-update-text>Connecting live updates…</span>
+</div>
+<div class="data-quality-banner d-none" data-data-quality role="status" aria-live="polite"></div>
 <section class="kpi-grid" aria-label="Agency key performance indicators">
   <% [
     ['newLeads','New leads','bi-person-plus','indigo','Total new leads in the selected period'],
-    ['outboundDials','Total dials','bi-telephone-outbound','blue','Unique outbound dial records'],
+    ['outboundDials','Total calls','bi-telephone-outbound','blue','Live Hot Prospector total_calls value'],
+    ['answeredCalls','Answered calls','bi-telephone-inbound','green','Live Hot Prospector total_answer value'],
     ['validBookings','Total bookings','bi-calendar-check','green','Booked, confirmed, or scheduled appointments'],
     ['leadToBookingRate','Lead conversion','bi-graph-up-arrow','green','Valid bookings divided by new leads'],
+    ['appointmentToAnswerRate','HP appointment rate','bi-percent','green','Appointments divided by answered calls, matching the percentage shown by Hot Prospector'],
     ['averageSpeedToLeadSeconds','Average speed to lead','bi-stopwatch','amber','Average time from lead creation to first outbound dial'],
     ['medianSpeedToLeadSeconds','Median speed to lead','bi-hourglass-split','amber','Middle speed-to-lead value'],
     ['talkTimeSeconds','Total talk time','bi-mic','purple','Total synchronized talk time'],
     ['totalGapTimeSeconds','Total gap time','bi-pause-circle','rose','Time between consecutive CSR calls'],
-    ['dialsPerLead','Avg. dials per lead','bi-telephone-forward','blue','Outbound dials divided by unique leads dialed'],
-    ['conversationRate','Conversation rate','bi-chat-square-dots','green','Meaningful conversations divided by answered calls'],
+    ['dialsPerLead','Avg. calls per lead','bi-telephone-forward','blue','Live Hot Prospector average calls per lead'],
+    ['decisionMakers','Decision makers','bi-chat-square-dots','green','Hot Prospector decision-maker total; not treated as verified conversations'],
     ['talkTimeUtilization','Talk-time utilization','bi-pie-chart','purple','Talk time divided by working time'],
     ['averageTalkTimePerConversation','Avg. talk / conversation','bi-clock-history','amber','Total talk seconds divided by meaningful conversations']
   ].forEach(([key,label,icon,tone,tooltip]) => { %>
-    <article class="kpi-card" data-kpi="<%= key %>" tabindex="0" data-bs-toggle="tooltip" data-bs-title="<%= tooltip %>">
-      <span class="kpi-icon <%= tone %>"><i class="bi <%= icon %>"></i></span>
-      <div><span><%= label %></span><strong class="skeleton-text" data-kpi-value>Loading</strong><small data-kpi-note>Selected period</small></div>
+    <article class="kpi-card kpi-<%= tone %>" data-kpi="<%= key %>" tabindex="0" data-bs-toggle="tooltip" data-bs-title="<%= tooltip %>">
+      <div class="kpi-card-top">
+        <span class="kpi-label"><%= label %></span>
+        <span class="kpi-icon <%= tone %>"><i class="bi <%= icon %>" aria-hidden="true"></i></span>
+      </div>
+      <strong class="skeleton-text" data-kpi-value>Loading</strong>
+      <small class="kpi-note"><i class="bi bi-calendar2-range" aria-hidden="true"></i><span data-kpi-note>Selected period</span></small>
     </article>
   <% }) %>
 </section>
 
 <section class="chart-dashboard-grid mt-4">
   <% [
-    ['leadsBookingsChart','Leads and bookings trend','New leads compared with valid bookings over time','wide'],
-    ['dialsConversationsChart','Dials and conversations trend','Outbound activity and meaningful conversations','wide'],
-    ['clinicConversionChart','Clinic conversion comparison','Lead-to-booking conversion across clinics',''],
-    ['speedDistributionChart','Speed-to-lead distribution','Percentage of contacted leads by response window',''],
-    ['callsByHourChart','Calls by hour of day','Outbound dial volume by local clinic hour',''],
-    ['csrBookingChart','Booking performance by CSR','Valid bookings and booking ratios by team member','']
-  ].forEach(([id,title,description,size]) => { %>
+    ['leadsBookingsChart','Leads and bookings trend','New leads compared with valid bookings over time','wide','bi-graph-up-arrow','orange'],
+    ['dialsConversationsChart','Dials and conversations trend','Outbound activity and meaningful conversations','wide','bi-telephone-outbound','blue'],
+    ['clinicConversionChart','Clinic conversion comparison','Lead-to-booking conversion across clinics','','bi-buildings','green'],
+    ['speedDistributionChart','Speed-to-lead distribution','Percentage of contacted leads by response window','','bi-stopwatch','amber'],
+    ['callsByHourChart','Calls by hour of day','Outbound dial volume by local clinic hour','','bi-clock-history','blue'],
+    ['csrBookingChart','Booking performance by CSR','Valid bookings and booking ratios by team member','','bi-headset','purple']
+  ].forEach(([id,title,description,size,icon,tone]) => { %>
     <article class="report-card <%= size %>">
-      <div class="report-card-head"><div><h2><%= title %></h2><p><%= description %></p></div><button class="icon-button" type="button" data-bs-toggle="tooltip" data-bs-title="Chart values follow the selected filters" aria-label="Chart information"><i class="bi bi-info-circle"></i></button></div>
+      <div class="report-card-head"><div class="report-card-title"><span class="report-card-icon <%= tone %>"><i class="bi <%= icon %>" aria-hidden="true"></i></span><div><h2><%= title %></h2><p><%= description %></p></div></div><button class="icon-button" type="button" data-bs-toggle="tooltip" data-bs-title="Chart values follow the selected filters" aria-label="Chart information"><i class="bi bi-info-circle"></i></button></div>
       <div class="chart-stage loading" data-chart-stage><canvas id="<%= id %>" role="img" aria-label="<%= title %>"></canvas><div class="chart-skeleton"><span></span><span></span><span></span><span></span></div><div class="chart-empty d-none"><i class="bi bi-bar-chart"></i><span>No data for this range</span></div></div>
     </article>
   <% }) %>

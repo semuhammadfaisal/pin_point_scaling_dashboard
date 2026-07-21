@@ -1,11 +1,12 @@
-const metricsService = require('../services/metricsService');
+const metricsService = require('../services/metricsFacadeService');
 const { successResponse } = require('../utils/metricsResponse');
 
 function endpoint(serviceMethod) {
   return async (req, res) => {
     const result = await serviceMethod(req.metricsFilters);
     if (res.locals.requestTimedOut || res.writableEnded) return;
-    res.json(successResponse(req.metricsFilters, result.summary, result.data));
+    res.set('Cache-Control', 'no-store');
+    res.json(successResponse(req.metricsFilters, result.summary, result.data, result.meta));
   };
 }
 

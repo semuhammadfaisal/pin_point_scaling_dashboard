@@ -34,6 +34,21 @@ For independent scaling, set `SYNC_CRON_ENABLED=false` on every web instance and
 
 Never run both strategies simultaneously unless deliberately testing the lock behavior.
 
+## V2 accuracy rollout
+
+Deploy v2 in shadow mode first:
+
+```text
+METRICS_DATA_VERSION=v1
+METRICS_V2_PIPELINE_ENABLED=true
+METRICS_V2_BACKFILL_START_DATE=YYYY-MM-DD
+METRICS_V2_ROLLBACK_VERIFIED=false
+```
+
+Import only sanitized HAR captures, verify every clinic mapping/timezone, run `npm run v2:backfill`, and use `/settings/data-quality` until all checkpoints and reconciliations pass. Do not set `METRICS_DATA_VERSION=v2` merely because a sync completed. Startup deliberately fails the v2 cutover when history, freshness, mappings, reconciliation, critical issues, or rollback verification are incomplete.
+
+After a successful rollback rehearsal, set `METRICS_V2_ROLLBACK_VERIFIED=true` and then `METRICS_DATA_VERSION=v2`. Roll back by restoring `METRICS_DATA_VERSION=v1`; the parallel collections keep both datasets intact.
+
 ## MongoDB Atlas configuration
 
 - Use a dedicated production project and an `atlasAdmin` account only for setup.

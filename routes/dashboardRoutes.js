@@ -2,6 +2,7 @@ const express = require('express');
 const dashboardController = require('../controllers/dashboardController');
 const pageController = require('../controllers/pageController');
 const settingsController = require('../controllers/settingsController');
+const dataQualityController = require('../controllers/dataQualityController');
 const asyncHandler = require('../utils/asyncHandler');
 const { body, param } = require('express-validator');
 const { requireAuth } = require('../middleware/auth');
@@ -31,6 +32,10 @@ router.post(
   body('hotProspectorCampaignId').optional({ checkFalsy: true }).trim().isLength({ max: 200 }).withMessage('Campaign ID is too long.'),
   body('hotProspectorGroupId').optional({ checkFalsy: true }).trim().isLength({ max: 200 }).withMessage('Group ID is too long.'),
   body('active').optional().isIn(['true', 'false']).withMessage('Invalid active status.'),
+  body('sourceLocationId').optional({ checkFalsy: true }).trim().isLength({ max: 200 }).withMessage('Source location ID is too long.'),
+  body('locationAliases').optional({ checkFalsy: true }).trim().isLength({ max: 2000 }).withMessage('Location aliases are too long.'),
+  body('timezoneVerified').optional().isIn(['true', 'false']).withMessage('Invalid timezone verification.'),
+  body('mappingVerified').optional().isIn(['true', 'false']).withMessage('Invalid mapping verification.'),
   asyncHandler(settingsController.createClinic)
 );
 router.post(
@@ -42,6 +47,10 @@ router.post(
   body('hotProspectorCampaignId').optional({ checkFalsy: true }).trim().isLength({ max: 200 }).withMessage('Campaign ID is too long.'),
   body('hotProspectorGroupId').optional({ checkFalsy: true }).trim().isLength({ max: 200 }).withMessage('Group ID is too long.'),
   body('active').optional().isIn(['true', 'false']).withMessage('Invalid active status.'),
+  body('sourceLocationId').optional({ checkFalsy: true }).trim().isLength({ max: 200 }).withMessage('Source location ID is too long.'),
+  body('locationAliases').optional({ checkFalsy: true }).trim().isLength({ max: 2000 }).withMessage('Location aliases are too long.'),
+  body('timezoneVerified').optional().isIn(['true', 'false']).withMessage('Invalid timezone verification.'),
+  body('mappingVerified').optional().isIn(['true', 'false']).withMessage('Invalid mapping verification.'),
   asyncHandler(settingsController.updateClinic)
 );
 router.post(
@@ -50,5 +59,8 @@ router.post(
   asyncHandler(settingsController.triggerSync)
 );
 router.get('/settings/sync-logs', asyncHandler(settingsController.showSyncLogs));
+router.get('/settings/data-quality', asyncHandler(dataQualityController.show));
+router.post('/settings/data-quality/backfill', asyncHandler(dataQualityController.startBackfill));
+router.post('/settings/data-quality/reconcile', asyncHandler(dataQualityController.startReconciliation));
 
 module.exports = router;

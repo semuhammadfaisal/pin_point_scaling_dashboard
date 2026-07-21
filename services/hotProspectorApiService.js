@@ -1,8 +1,6 @@
 const config = require('../config/hotProspector');
 const client = require('./hotProspectorClient');
 
-let appointmentsUnavailable = false;
-
 function unwrapResponse(value) {
   let response = value;
   for (let depth = 0; depth < 5; depth += 1) {
@@ -46,27 +44,76 @@ function extractRecords(endpointKey, response) {
 }
 
 async function fetchPaginated(endpointKey, parameters = {}, options = {}) {
+  const result = await fetchPaginatedWithMeta(endpointKey, parameters, options);
+  if (!result.complete) {
+    const error = new Error(
+      `Hot Prospector ${config.endpoints[endpointKey].method} pagination was incomplete: ` +
+      `received ${result.records.length} of ${result.expectedRecordCount ?? 'unknown'} records.`
+    );
+    error.code = 'HOT_PROSPECTOR_INCOMPLETE_PAGESET';
+    error.pagination = result.metadata;
+    throw error;
+  }
+  return result.records;
+}
+
+function recordIdentity(record) {
+  if (!record || typeof record !== 'object') return JSON.stringify(record);
+  const keys = ['CallId', 'callId', 'recordingId', 'LeadId', 'leadId', 'appointmentId', 'id'];
+  const stable = keys.map((key) => record[key]).find((value) => value !== undefined && value !== null && value !== '');
+  return stable === undefined ? JSON.stringify(record) : String(stable);
+}
+
+async function fetchPaginatedWithMeta(endpointKey, parameters = {}, options = {}) {
   const limit = Math.min(500, Math.max(1, Number(options.limit || config.pageSize)));
   const maxPages = Math.max(1, Number(options.maxPages || 1000));
   const records = [];
+  const recordIdentities = new Set();
   const pageSignatures = new Set();
   let offset = Math.max(0, Number(options.offset || 0));
+  let expectedRecordCount = null;
+  let truncated = false;
+  let duplicatePage = false;
+  let pagesFetched = 0;
 
   for (let page = 0; page < maxPages; page += 1) {
     const response = unwrapResponse(await client.request(endpointKey, { ...parameters, limit, offset }));
+    pagesFetched += 1;
     const pageRecords = extractRecords(endpointKey, response);
+    const statedTotal = Number(response?.total_records ?? response?.totalRecords ?? response?.total);
+    if (Number.isFinite(statedTotal) && statedTotal >= 0) expectedRecordCount = statedTotal;
     const signature = pageRecords.length
       ? JSON.stringify([pageRecords.length, pageRecords[0], pageRecords[pageRecords.length - 1]])
       : 'empty';
-    if (pageSignatures.has(signature)) break;
+    if (pageSignatures.has(signature)) {
+      duplicatePage = true;
+      break;
+    }
     pageSignatures.add(signature);
-    records.push(...pageRecords);
+    for (const record of pageRecords) {
+      const identity = recordIdentity(record);
+      if (recordIdentities.has(identity)) continue;
+      recordIdentities.add(identity);
+      records.push(record);
+    }
     const hasMore = response?.has_more === true || String(response?.has_more).toLowerCase() === 'true';
-    if (!hasMore || pageRecords.length === 0) break;
+    if (expectedRecordCount !== null && records.length >= expectedRecordCount) break;
+    if (!hasMore || pageRecords.length === 0) {
+      truncated = expectedRecordCount !== null && records.length < expectedRecordCount;
+      break;
+    }
     const nextOffset = Number(response?.next_offset);
     offset = Number.isFinite(nextOffset) && nextOffset > offset ? nextOffset : offset + pageRecords.length;
   }
-  return records;
+  if (pagesFetched >= maxPages && expectedRecordCount !== null && records.length < expectedRecordCount) truncated = true;
+  const complete = !duplicatePage && !truncated &&
+    (expectedRecordCount === null || records.length === expectedRecordCount);
+  return {
+    records,
+    expectedRecordCount,
+    complete,
+    metadata: { endpointKey, pagesFetched, expectedRecordCount, uniqueRecordCount: records.length, duplicatePage, truncated },
+  };
 }
 
 async function fetchCampaigns() {
@@ -137,21 +184,12 @@ async function fetchLeads({ groupId, fromDate, toDate }) {
 }
 
 async function fetchAppointments({ campaignId, groupId, fromDate, toDate }) {
-  if (appointmentsUnavailable) return [];
-  try {
-    return await fetchPaginated('appointments', {
-      campaignId,
-      groupId,
-      from_date: fromDate,
-      to_date: toDate,
-    });
-  } catch (error) {
-    if (error.response?.status === 404) {
-      appointmentsUnavailable = true;
-      return [];
-    }
-    throw error;
-  }
+  return fetchPaginated('appointments', {
+    campaignId,
+    groupId,
+    from_date: fromDate,
+    to_date: toDate,
+  });
 }
 
 async function testConnection() {
@@ -162,6 +200,8 @@ async function testConnection() {
 
 module.exports = {
   unwrapResponse,
+  extractRecords,
+  fetchPaginatedWithMeta,
   fetchCampaigns,
   fetchGroups,
   fetchUsers,

@@ -30,6 +30,7 @@ export async function getMetrics(endpoint, parameters = {}, signal) {
     headers: { Accept: 'application/json' },
     credentials: 'same-origin',
     signal,
+    cache: 'no-store',
   });
   const payload = await response.json().catch(() => null);
   if (!response.ok || !payload?.success) {

@@ -31,4 +31,7 @@ module.exports = Object.freeze({
   retries: env.hotProspector.retries,
   pageSize: 500,
   endpoints: endpointDefinitions,
+  webEndpoints: Object.freeze({
+    overview: process.env.HOT_PROSPECTOR_WEB_OVERVIEW_URL || 'https://app.hotprospector.com/glu/Make_dashboard/get_total_record',
+  }),
 });

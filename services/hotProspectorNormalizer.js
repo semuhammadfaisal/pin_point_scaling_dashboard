@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const { parseExternalDate, parseDuration, startOfUtcDay } = require('../utils/date');
+const env = require('../config/env');
 
 function pick(record, ...keys) {
   if (!record || typeof record !== 'object') return undefined;
@@ -22,6 +23,16 @@ function numberValue(value, fallback = 0) {
 
 function percentValue(value) {
   return Math.min(100, Math.max(0, numberValue(value)));
+}
+
+function strictBoolean(value) {
+  if (value === null || value === undefined || value === '') return null;
+  if (value === true || value === 1 || value === '1') return true;
+  if (value === false || value === 0 || value === '0') return false;
+  const text = String(value ?? '').trim().toLowerCase();
+  if (['true', 'yes', 'y'].includes(text)) return true;
+  if (['false', 'no', 'n'].includes(text)) return false;
+  return null;
 }
 
 function stableId(prefix, record, identityFields, fingerprintFields) {
@@ -90,17 +101,26 @@ function normalizeCall(record, clinic, leadId = null, csrId = null) {
     clinic.timezone
   );
   const durationSeconds = parseDuration(pick(record, 'durationSeconds', 'duration', 'call_duration'));
-  const talkTimeSeconds = parseDuration(pick(record, 'talkTimeSeconds', 'talk_time', 'talkTime')) || durationSeconds;
+  const talkTimeValue = pick(record, 'talkTimeSeconds', 'talk_time', 'talkTime');
+  const talkTimeSeconds = talkTimeValue === undefined ? null : parseDuration(talkTimeValue);
   const status = stringValue(pick(record, 'call_status', 'status', 'statusName'));
   const directionRaw = stringValue(pick(record, 'call_type', 'direction', 'type')).toLowerCase();
-  const direction = directionRaw.includes('in') ? 'inbound' : directionRaw.includes('out') ? 'outbound' : 'unknown';
+  const direction = directionRaw === 'inbound' || directionRaw === 'in'
+    ? 'inbound'
+    : directionRaw === 'outbound' || directionRaw === 'out' ? 'outbound' : 'unknown';
   const externalCallId = stableId(
     'call',
     record,
     ['externalCallId', 'recordingId', 'callId', 'id'],
     ['leadId', 'call_time', 'from_number', 'to_number', 'duration']
   );
-  const answered = /answered|completed|connected/i.test(status) || durationSeconds > 0;
+  const explicitAnswered = strictBoolean(pick(record, 'answered', 'is_answered'));
+  const answered = explicitAnswered !== null
+    ? explicitAnswered
+    : env.metrics.answerThresholdVerified && direction === 'outbound'
+      ? !/failed|busy|ringing|no-answer|missed/i.test(status) && durationSeconds > env.metrics.answerThresholdSeconds
+      : /answered|connected/i.test(status) ? true : null;
+  const conversation = strictBoolean(pick(record, 'conversation', 'is_conversation', 'decision_maker'));
   return {
     externalCallId,
     clinicId: clinic._id,
@@ -110,7 +130,7 @@ function normalizeCall(record, clinic, leadId = null, csrId = null) {
     direction,
     status,
     answered,
-    conversation: Boolean(pick(record, 'conversation', 'is_conversation', 'transcript_text', 'message_data')),
+    conversation,
     startedAt,
     answeredAt: parseExternalDate(pick(record, 'answeredAt', 'answered_at'), clinic.timezone),
     endedAt: parseExternalDate(pick(record, 'endedAt', 'ended_at'), clinic.timezone) ||

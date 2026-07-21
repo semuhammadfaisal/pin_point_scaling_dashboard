@@ -13,7 +13,8 @@ test('normalizes the authoritative Hot Prospector overview response', () => {
   expect(result.outboundDials).toBe(2278);
   expect(result.newLeads).toBe(1019);
   expect(result.answeredCalls).toBe(530);
-  expect(result.conversations).toBe(1651);
+  expect(result.decisionMakers).toBe(1651);
+  expect(result.conversations).toBeNull();
   expect(result.validBookings).toBe(54);
   expect(result.averageSpeedToLeadSeconds).toBe(32520);
   expect(result.averageDialsPerLead).toBe(2.2);

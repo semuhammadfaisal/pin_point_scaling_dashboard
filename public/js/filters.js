@@ -6,10 +6,9 @@ function isoDate(date) {
 }
 
 function defaultRange() {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(start.getDate() - 29);
-  return { startDate: isoDate(start), endDate: isoDate(end) };
+  const today = new Date();
+  const date = isoDate(today);
+  return { startDate: date, endDate: date };
 }
 
 function quickRange(key) {

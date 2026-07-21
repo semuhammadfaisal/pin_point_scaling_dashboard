@@ -10,10 +10,8 @@ function isoDate(date) {
 }
 
 function defaults() {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(start.getDate() - 29);
-  return { startDate: isoDate(start), endDate: isoDate(end), clinicId: '', csrId: '', reportType: 'agency-daily' };
+  const today = isoDate(new Date());
+  return { startDate: today, endDate: today, clinicId: '', csrId: '', reportType: 'agency-daily' };
 }
 
 function filters() {

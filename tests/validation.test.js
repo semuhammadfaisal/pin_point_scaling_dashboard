@@ -15,6 +15,17 @@ test('metrics filters normalize valid query parameters', () => {
   expect(req.metricsFilters.startDate).toBe('2026-07-01');
 });
 
+test('metrics filters default to the current day', () => {
+  const req = { query: {}, params: {} };
+  const res = response();
+  const next = jest.fn();
+  validateMetricsQuery(req, res, next);
+  const today = new Date().toISOString().slice(0, 10);
+  expect(next).toHaveBeenCalledTimes(1);
+  expect(req.metricsFilters.startDate).toBe(today);
+  expect(req.metricsFilters.endDate).toBe(today);
+});
+
 test('date range validation rejects reversed and excessive ranges', () => {
   const req = { query: { startDate: '2024-01-01', endDate: '2026-07-17' }, params: {} };
   const res = response();

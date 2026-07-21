@@ -41,15 +41,15 @@ async function load(filters) {
     renderKpis(daily.summary);
     const monthlyRows = monthly.data;
     barChart('monthlyLeadsChart', monthlyRows.map((row) => row.period), [{ label: 'New leads', data: monthlyRows.map((row) => row.newLeads) }]);
-    barChart('monthlyBookingsChart', monthlyRows.map((row) => row.period), [{ label: 'Bookings', data: monthlyRows.map((row) => row.validBookings), color: '#18a278' }]);
+    barChart('monthlyBookingsChart', monthlyRows.map((row) => row.period), [{ label: 'Bookings', data: monthlyRows.map((row) => row.validBookings), color: '#12b76a' }]);
     lineChart('conversionTrendChart', daily.data.map((row) => row.period), [
       { label: 'Lead conversion %', data: daily.data.map((row) => row.leadToBookingRate) },
-      { label: 'Conversation conversion %', data: daily.data.map((row) => row.conversationToBookingRate), color: '#18a278' },
+      { label: 'Conversation conversion %', data: daily.data.map((row) => row.conversationToBookingRate), color: '#12b76a' },
     ]);
     const csrRows = csrs.data.slice(0, 12);
     barChart('csrComparisonChart', csrRows.map((row) => row.name), [
       { label: 'Dials', data: csrRows.map((row) => row.outboundDials) },
-      { label: 'Bookings', data: csrRows.map((row) => row.validBookings), color: '#18a278' },
+      { label: 'Bookings', data: csrRows.map((row) => row.validBookings), color: '#12b76a' },
     ]);
     const speedSummary = speedMetrics.summary;
     doughnutChart('clinicSpeedChart', ['Within 1 min', '1–5 min', '5–15 min', 'Over 15 min'], [
@@ -60,7 +60,7 @@ async function load(filters) {
     ]);
     lineChart('clinicCallsChart', daily.data.map((row) => row.period), [
       { label: 'Outbound dials', data: daily.data.map((row) => row.outboundDials) },
-      { label: 'Conversations', data: daily.data.map((row) => row.conversations), color: '#d49424' },
+      { label: 'Conversations', data: daily.data.map((row) => row.conversations), color: '#7f56d9' },
     ]);
     renderCsrTable(csrs.data);
   } catch (error) {

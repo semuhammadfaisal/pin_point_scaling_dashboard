@@ -1,7 +1,9 @@
 jest.mock('../models/Clinic', () => ({ create: jest.fn(), findById: jest.fn(), findByIdAndUpdate: jest.fn() }));
+jest.mock('../models/ClinicSourceMappingV2', () => ({ findOneAndUpdate: jest.fn().mockResolvedValue(null) }));
 jest.mock('../services/auditService', () => ({ recordAudit: jest.fn().mockResolvedValue(null) }));
 
 const Clinic = require('../models/Clinic');
+const ClinicSourceMappingV2 = require('../models/ClinicSourceMappingV2');
 const { recordAudit } = require('../services/auditService');
 const controller = require('../controllers/settingsController');
 
@@ -19,6 +21,9 @@ test('clinic creation persists campaign/group mapping and writes an audit event'
   const res = response();
   await controller.createClinic(req, res);
   expect(Clinic.create).toHaveBeenCalledWith(expect.objectContaining({ hotProspectorCampaignId: 'campaign-4', hotProspectorGroupId: 'group-2' }));
+  expect(ClinicSourceMappingV2.findOneAndUpdate).toHaveBeenCalledWith(
+    { clinicId: 'clinic-1' }, expect.any(Object), expect.objectContaining({ upsert: true })
+  );
   expect(recordAudit).toHaveBeenCalledWith(req, 'clinic_mapping_change', expect.objectContaining({ targetId: 'clinic-1' }));
   expect(res.redirect).toHaveBeenCalledWith('/settings/clinics');
 });

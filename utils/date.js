@@ -62,6 +62,15 @@ function startOfUtcDay(date) {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 }
 
+function localDateRange(startDate, endDate, timeZone = 'UTC') {
+  const start = parseExternalDate(`${startDate}T00:00:00`, timeZone);
+  const endBoundary = new Date(`${endDate}T00:00:00.000Z`);
+  endBoundary.setUTCDate(endBoundary.getUTCDate() + 1);
+  const exclusiveEnd = parseExternalDate(`${endBoundary.toISOString().slice(0, 10)}T00:00:00`, timeZone);
+  if (!start || !exclusiveEnd) throw new Error(`Unable to build date range for timezone ${timeZone}.`);
+  return { start, end: exclusiveEnd };
+}
+
 function parseDuration(value) {
   if (value === null || value === undefined || value === '') return 0;
   if (Number.isFinite(Number(value))) return Math.max(0, Math.round(Number(value)));
@@ -78,4 +87,4 @@ function parseDuration(value) {
   return 0;
 }
 
-module.exports = { parseExternalDate, formatApiDate, startOfUtcDay, parseDuration };
+module.exports = { parseExternalDate, formatApiDate, startOfUtcDay, localDateRange, parseDuration };

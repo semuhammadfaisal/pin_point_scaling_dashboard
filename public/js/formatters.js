@@ -1,11 +1,13 @@
 const numberFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
 const decimalFormatter = new Intl.NumberFormat(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
-export const number = (value) => numberFormatter.format(Number(value || 0));
-export const decimal = (value) => decimalFormatter.format(Number(value || 0));
-export const percent = (value) => `${decimal(value)}%`;
+const unavailable = (value) => value === null || value === undefined || Number.isNaN(Number(value));
+export const number = (value) => unavailable(value) ? 'N/A' : numberFormatter.format(Number(value));
+export const decimal = (value) => unavailable(value) ? 'N/A' : decimalFormatter.format(Number(value));
+export const percent = (value) => unavailable(value) ? 'N/A' : `${decimal(value)}%`;
 
 export function duration(value) {
+  if (unavailable(value)) return 'N/A';
   const seconds = Math.max(0, Math.round(Number(value || 0)));
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);

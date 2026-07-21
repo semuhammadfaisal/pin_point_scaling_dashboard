@@ -12,6 +12,7 @@ const AppError = require('../utils/AppError');
 const { parseExternalDate, formatApiDate } = require('../utils/date');
 const { percentage, average, median, round } = require('./metricsFormulaService');
 const hotProspectorOverview = require('./hotProspectorOverviewService');
+const hotProspectorAgentMetrics = require('./hotProspectorAgentMetricsService');
 
 const resultCache = new Map();
 
@@ -134,8 +135,11 @@ async function aggregateCallStats(filters, clinic, range) {
           $sum: { $cond: [{ $and: [{ $eq: ['$direction', 'outbound'] }, '$answered'] }, 1, 0] },
         },
         answeredCalls: { $sum: { $cond: ['$answered', 1, 0] } },
+        answeredKnown: { $sum: { $cond: [{ $ne: ['$answered', null] }, 1, 0] } },
         conversations: { $sum: { $cond: ['$conversation', 1, 0] } },
+        conversationKnown: { $sum: { $cond: [{ $ne: ['$conversation', null] }, 1, 0] } },
         talkTimeSeconds: { $sum: { $ifNull: ['$talkTimeSeconds', 0] } },
+        talkTimeKnown: { $sum: { $cond: [{ $ne: ['$talkTimeSeconds', null] }, 1, 0] } },
         outboundLeadIds: {
           $addToSet: { $cond: [{ $eq: ['$direction', 'outbound'] }, '$leadId', null] },
         },
@@ -146,10 +150,10 @@ async function aggregateCallStats(filters, clinic, range) {
   return {
     totalCalls: result?.totalCalls || 0,
     outboundDials: result?.outboundDials || 0,
-    answeredOutboundCalls: result?.answeredOutboundCalls || 0,
-    answeredCalls: result?.answeredCalls || 0,
-    conversations: result?.conversations || 0,
-    talkTimeSeconds: result?.talkTimeSeconds || 0,
+    answeredOutboundCalls: result?.answeredKnown ? result.answeredOutboundCalls : null,
+    answeredCalls: result?.answeredKnown ? result.answeredCalls : null,
+    conversations: result?.conversationKnown ? result.conversations : null,
+    talkTimeSeconds: result?.talkTimeKnown ? result.talkTimeSeconds : null,
     uniqueLeadsDialed,
   };
 }
@@ -200,7 +204,7 @@ async function aggregateSpeedToLead(filters, clinic, range) {
 async function calculateClinicMetrics(filters, clinic) {
   const range = clinicDateRange(filters, clinic);
   const dailyRange = metricDateRange(filters);
-  const [leadRows, appointmentRows, callStats, speedValues, agentTimeRows] = await Promise.all([
+  const [leadRows, appointmentRows, callStats, speedValues, agentTimeRows, hasAppointmentData] = await Promise.all([
     Lead.aggregate([
       { $match: leadMatch(filters, clinic, range) },
       { $group: { _id: '$externalLeadId' } },
@@ -235,17 +239,18 @@ async function calculateClinicMetrics(filters, clinic) {
         },
       },
     ]),
+    Appointment.exists({}),
   ]);
 
   const newLeads = leadRows[0]?.count || 0;
-  const validBookings = appointmentRows[0]?.count || agentTimeRows[0]?.appointments || 0;
-  const conversations = callStats.conversations || agentTimeRows[0]?.conversations || 0;
-  const answeredCalls = agentTimeRows[0]?.answeredCalls || callStats.answeredCalls;
-  const answeredOutboundCalls = agentTimeRows[0]?.answeredCalls || callStats.answeredOutboundCalls;
-  const answerRateDials = agentTimeRows[0]?.outboundCalls || callStats.outboundDials;
-  const talkTimeSeconds = agentTimeRows[0]?.talkTimeSeconds || callStats.talkTimeSeconds;
-  const workingTimeSeconds = agentTimeRows[0]?.workingTimeSeconds || 0;
-  const totalGapTimeSeconds = agentTimeRows[0]?.gapTimeSeconds || 0;
+  const validBookings = hasAppointmentData ? (appointmentRows[0]?.count || 0) : null;
+  const conversations = callStats.conversations;
+  const answeredCalls = callStats.answeredCalls;
+  const answeredOutboundCalls = callStats.answeredOutboundCalls;
+  const answerRateDials = callStats.outboundDials;
+  const talkTimeSeconds = callStats.talkTimeSeconds;
+  const workingTimeSeconds = agentTimeRows[0] ? agentTimeRows[0].workingTimeSeconds : null;
+  const totalGapTimeSeconds = agentTimeRows[0] ? agentTimeRows[0].gapTimeSeconds : null;
   const speedTotal = speedValues.reduce((sum, value) => sum + value, 0);
 
   return {
@@ -424,35 +429,51 @@ async function getClinicTrends(filters, clinic) {
 }
 
 async function buildOverview(filters) {
-  const rows = await getClinicMetricRows(filters);
-  const summary = combineMetrics(rows);
   if (env.hotProspector.webCookie && !filters.clinicId && !filters.csrId && !filters.groupId) {
     const authoritative = await hotProspectorOverview.getOverviewMetrics(filters);
-    const sourceIsEmpty = authoritative.newLeads === 0 && authoritative.outboundDials === 0 &&
-      authoritative.answeredCalls === 0 && authoritative.validBookings === 0;
-    if (sourceIsEmpty && (summary.newLeads > 0 || summary.outboundDials > 0 || summary.validBookings > 0)) {
-      throw new Error('Hot Prospector web session is expired or unauthorized; authoritative metrics were not applied.');
-    }
-    summary.newLeads = authoritative.newLeads;
-    summary.outboundDials = authoritative.outboundDials;
-    summary.validBookings = authoritative.validBookings;
-    summary.answeredCalls = authoritative.answeredCalls;
-    summary.answeredOutboundCalls = authoritative.answeredCalls;
-    summary.conversations = authoritative.conversations;
-    summary.averageSpeedToLeadSeconds = authoritative.averageSpeedToLeadSeconds;
-    summary.dialsPerLead = authoritative.averageDialsPerLead;
-    summary.averageDialsPerLead = authoritative.averageDialsPerLead;
-    summary.leadToBookingRate = percentage(authoritative.validBookings, authoritative.newLeads);
-    summary.conversationToBookingRate = percentage(authoritative.validBookings, authoritative.conversations);
-    summary.answerRate = percentage(authoritative.answeredCalls, authoritative.outboundDials);
-    summary.conversationRate = percentage(authoritative.conversations, authoritative.answeredCalls);
-    summary.averageTalkTimePerConversation = average(summary.talkTimeSeconds, authoritative.conversations);
-    summary.source = 'hot_prospector_overview';
+    return {
+      summary: {
+        newLeads: authoritative.newLeads,
+        outboundDials: authoritative.outboundDials,
+        validBookings: authoritative.validBookings,
+        answeredCalls: authoritative.answeredCalls,
+        answeredOutboundCalls: authoritative.answeredCalls,
+        decisionMakers: authoritative.decisionMakers,
+        conversations: null,
+        averageSpeedToLeadSeconds: authoritative.averageSpeedToLeadSeconds,
+        dialsPerLead: authoritative.averageDialsPerLead,
+        averageDialsPerLead: authoritative.averageDialsPerLead,
+        leadToBookingRate: percentage(authoritative.validBookings, authoritative.newLeads),
+        appointmentToAnswerRate: percentage(authoritative.validBookings, authoritative.answeredCalls),
+        answerRate: percentage(authoritative.answeredCalls, authoritative.outboundDials),
+        conversationToBookingRate: null,
+        conversationRate: null,
+        talkTimeSeconds: null,
+        totalGapTimeSeconds: null,
+        workingTimeSeconds: null,
+        talkTimeUtilization: null,
+        averageTalkTimePerConversation: null,
+        medianSpeedToLeadSeconds: null,
+        contactedWithin1Minute: null,
+        contactedWithin5Minutes: null,
+        contactedWithin15Minutes: null,
+        uniqueLeadsDialed: null,
+        speedSampleSize: null,
+        source: 'hot_prospector_overview',
+        sourceAsOf: authoritative.fetchedAt,
+      },
+      data: [],
+    };
   }
+  const rows = await getClinicMetricRows(filters);
+  const summary = combineMetrics(rows);
   return { summary, data: rows.map(publicMetric) };
 }
 
 async function getOverview(filters) {
+  if (env.hotProspector.webCookie && !filters.clinicId && !filters.csrId && !filters.groupId) {
+    return buildOverview(filters);
+  }
   return cached(cacheKey('overview', filters), () => buildOverview(filters));
 }
 
@@ -565,20 +586,29 @@ async function getBookingRatios(filters) {
 }
 
 async function getSpeedToLead(filters) {
-  const rows = (await getClinicMetricRows(filters)).map((row) => ({
+  const metricRows = await getClinicMetricRows(filters);
+  const rows = metricRows.map((row) => ({
     clinicId: row.clinicId, clinicName: row.name, averageSpeedToLeadSeconds: row.averageSpeedToLeadSeconds,
     medianSpeedToLeadSeconds: row.medianSpeedToLeadSeconds, contactedWithin1Minute: row.contactedWithin1Minute,
     contactedWithin5Minutes: row.contactedWithin5Minutes, contactedWithin15Minutes: row.contactedWithin15Minutes,
     sampleSize: row.speedSampleSize,
   }));
   const all = await getOverview(filters);
+  const local = combineMetrics(metricRows);
+  const expectedSampleSize = Number(all.summary.newLeads);
+  const sampleSize = local.speedSampleSize;
+  const sampleComplete = Number.isFinite(expectedSampleSize) && sampleSize === expectedSampleSize;
   return { summary: {
     averageSpeedToLeadSeconds: all.summary.averageSpeedToLeadSeconds,
-    medianSpeedToLeadSeconds: all.summary.medianSpeedToLeadSeconds,
-    contactedWithin1Minute: all.summary.contactedWithin1Minute,
-    contactedWithin5Minutes: all.summary.contactedWithin5Minutes,
-    contactedWithin15Minutes: all.summary.contactedWithin15Minutes,
-    sampleSize: all.summary.speedSampleSize,
+    medianSpeedToLeadSeconds: sampleSize ? local.medianSpeedToLeadSeconds : null,
+    contactedWithin1Minute: local.contactedWithin1Minute,
+    contactedWithin5Minutes: local.contactedWithin5Minutes,
+    contactedWithin15Minutes: local.contactedWithin15Minutes,
+    sampleSize,
+    expectedSampleSize,
+    sampleComplete,
+    source: sampleComplete ? 'canonical_speed_sample_certified' : 'canonical_speed_sample',
+    sourceAsOf: all.summary.sourceAsOf,
   }, data: rows };
 }
 
@@ -615,6 +645,28 @@ async function getCallEfficiency(filters) {
 }
 
 async function getTalkTime(filters) {
+  const supportsAuthoritativeAgentMetrics = !filters.clinicId && !filters.csrId &&
+    !filters.campaignId && !filters.groupId;
+  if (supportsAuthoritativeAgentMetrics) {
+    try {
+      const metric = await hotProspectorAgentMetrics.getAgentMetrics(filters);
+      return {
+        summary: {
+          talkTimeSeconds: metric.talkTimeSeconds,
+          workingTimeSeconds: metric.workingTimeSeconds,
+          totalGapTimeSeconds: metric.totalGapTimeSeconds,
+          conversations: metric.conversations,
+          talkTimeUtilization: metric.talkTimeUtilization,
+          averageTalkTimePerConversation: metric.averageTalkTimePerConversation,
+          source: 'hot_prospector_agent_dashboard',
+          sourceAsOf: metric.fetchedAt,
+        },
+        data: metric.data,
+      };
+    } catch (error) {
+      if (error.code !== 'HOT_PROSPECTOR_AGENT_RANGE_UNSUPPORTED') throw error;
+    }
+  }
   const overview = await getOverview(filters);
   return {
     summary: {

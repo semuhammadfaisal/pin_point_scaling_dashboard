@@ -271,6 +271,32 @@ Default booking statuses are `booked`, `confirmed`, and `scheduled`; `cancelled`
 - Token expiry/refresh response fields
 - Whether the web-dashboard cookie is permitted and how it will be rotated
 
+## Certified v2 data pipeline
+
+The legacy dataset remains the default until the v2 quality gates pass. V2 never writes to the legacy lead, call, appointment, or daily-metric collections.
+
+1. Open `/settings/clinics`. For every visible clinic, enter exact Hot Prospector location aliases, confirm the campaign/group identifiers, select the clinic's IANA timezone, and mark both mapping and timezone as verified.
+2. Export representative Hot Prospector network traffic as a sanitized HAR. Remove cookies, authorization headers, tokens, phone numbers, emails, names, recordings, and transcripts. HAR files are ignored by Git.
+3. Import the contract capture:
+
+   ```bash
+   npm run v2:import-har -- C:\secure\sanitized-hot-prospector.har
+   ```
+
+4. Configure `METRICS_V2_BACKFILL_START_DATE` to the earliest source date and run the resumable backfill:
+
+   ```bash
+   npm run v2:backfill -- 2025-01-01 2026-07-20
+   ```
+
+5. Open `/settings/data-quality`, inspect pagination, endpoint, mapping, timestamp, and metric mismatches, then run reconciliation. Unsupported values display `N/A`; they are never silently converted to zero.
+6. Enable `METRICS_V2_PIPELINE_ENABLED=true` while keeping `METRICS_DATA_VERSION=v1`. This refreshes v2 every five minutes without changing production reads.
+7. Complete and record a rollback rehearsal, set `METRICS_V2_ROLLBACK_VERIFIED=true`, and resolve every critical issue. Only then set `METRICS_DATA_VERSION=v2`.
+
+Startup blocks a v2 cutover unless all visible clinics are verified, the complete configured history is backfilled, the latest reconciliation for every processed day is certified, source data is fresh, no critical issue remains, and rollback is verified. Reverting `METRICS_DATA_VERSION=v1` is the rollback.
+
+All metrics API responses include `source`, `sourceAsOf`, `freshnessSeconds`, `certification`, and `qualityIssues`. A certification applies only to the exact source snapshot and filters used by reconciliation.
+
 ## Deployment and release
 
 Use [render.yaml](./render.yaml) for a Render web service. Full Atlas, cron, backup, restore, and monitoring instructions are in [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md). Complete [docs/PRODUCTION_CHECKLIST.md](./docs/PRODUCTION_CHECKLIST.md) before launch.

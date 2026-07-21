@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator');
 const Clinic = require('../models/Clinic');
 const CSR = require('../models/CSR');
 const SyncLog = require('../models/SyncLog');
+const ClinicSourceMappingV2 = require('../models/ClinicSourceMappingV2');
 const api = require('../services/hotProspectorApiService');
 const normalizer = require('../services/hotProspectorNormalizer');
 const syncService = require('../services/hotProspectorSyncService');
@@ -82,17 +83,19 @@ async function testIntegration(req, res) {
 }
 
 async function showClinics(_req, res) {
-  const [{ campaigns, groups, apiError }, clinics] = await Promise.all([
+  const [{ campaigns, groups, apiError }, clinics, v2Mappings] = await Promise.all([
     remoteCatalog(),
     Clinic.find().sort({ active: -1, name: 1 }).lean(),
+    ClinicSourceMappingV2.find().lean(),
   ]);
+  const mappingByClinic = new Map(v2Mappings.map((mapping) => [String(mapping.clinicId), mapping]));
   res.render('settings/clinics', {
     ...page,
     title: 'Clinic Mapping',
     pageTitle: 'Clinic mapping',
     campaigns,
     groups,
-    clinics,
+    clinics: clinics.map((clinic) => ({ ...clinic, v2Mapping: mappingByClinic.get(String(clinic._id)) || null })),
     apiError,
   });
 }
@@ -118,6 +121,24 @@ async function createClinic(req, res) {
       timezone,
       active: req.body.active === 'true',
     });
+    await ClinicSourceMappingV2.findOneAndUpdate(
+      { clinicId: clinic._id },
+      {
+        $set: {
+          sourceLocationId: String(req.body.sourceLocationId || '').trim() || undefined,
+          sourceCampaignId: clinic.hotProspectorCampaignId || '',
+          sourceGroupId: clinic.hotProspectorGroupId || '',
+          aliases: String(req.body.locationAliases || clinic.name).split(',').map((value) => value.trim()).filter(Boolean),
+          timezone,
+          timezoneVerified: req.body.timezoneVerified === 'true',
+          mappingVerified: req.body.mappingVerified === 'true',
+          verifiedAt: req.body.timezoneVerified === 'true' && req.body.mappingVerified === 'true' ? new Date() : null,
+          verifiedBy: req.session.admin.id,
+        },
+        ...(String(req.body.sourceLocationId || '').trim() ? {} : { $unset: { sourceLocationId: 1 } }),
+      },
+      { upsert: true, runValidators: true }
+    );
     await recordAudit(req, 'clinic_mapping_change', {
       targetType: 'Clinic', targetId: clinic._id,
       metadata: { operation: 'create', campaignId: clinic.hotProspectorCampaignId, groupId: clinic.hotProspectorGroupId, timezone: clinic.timezone },
@@ -156,6 +177,24 @@ async function updateClinic(req, res) {
     );
     if (!clinic) setFlash(req, 'error', 'Clinic not found.');
     else {
+      await ClinicSourceMappingV2.findOneAndUpdate(
+        { clinicId: clinic._id },
+        {
+          $set: {
+            sourceLocationId: String(req.body.sourceLocationId || '').trim() || undefined,
+            sourceCampaignId: clinic.hotProspectorCampaignId || '',
+            sourceGroupId: clinic.hotProspectorGroupId || '',
+            aliases: String(req.body.locationAliases || clinic.name).split(',').map((value) => value.trim()).filter(Boolean),
+            timezone,
+            timezoneVerified: req.body.timezoneVerified === 'true',
+            mappingVerified: req.body.mappingVerified === 'true',
+            verifiedAt: req.body.timezoneVerified === 'true' && req.body.mappingVerified === 'true' ? new Date() : null,
+            verifiedBy: req.session.admin.id,
+          },
+          ...(String(req.body.sourceLocationId || '').trim() ? {} : { $unset: { sourceLocationId: 1 } }),
+        },
+        { upsert: true, runValidators: true }
+      );
       await recordAudit(req, 'clinic_mapping_change', {
         targetType: 'Clinic', targetId: clinic._id,
         metadata: {

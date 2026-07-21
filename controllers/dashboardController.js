@@ -6,7 +6,7 @@ async function showDashboard(_req, res) {
     layout: 'layouts/main',
     title: 'Dashboard',
     pageTitle: 'Performance overview',
-    pageDescription: 'A clear view of your clinic network at a glance.',
+    pageDescription: '',
     pageScript: '/js/dashboard.js',
     filterOptions,
   });

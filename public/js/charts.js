@@ -1,14 +1,14 @@
 const instances = new Map();
 const palette = {
-  indigo: '#5b5bd6',
-  indigoSoft: 'rgba(91,91,214,.12)',
-  green: '#18a278',
-  greenSoft: 'rgba(24,162,120,.12)',
-  amber: '#d49424',
-  red: '#d65b70',
-  blue: '#3d83d5',
-  slate: '#8290a6',
-  purple: '#8a61d2',
+  indigo: '#ff6b35',
+  indigoSoft: 'rgba(255,107,53,.12)',
+  green: '#12b76a',
+  greenSoft: 'rgba(18,183,106,.12)',
+  amber: '#f79009',
+  red: '#f04438',
+  blue: '#2e90fa',
+  slate: '#98a2b3',
+  purple: '#7f56d9',
 };
 
 function stageFor(canvas) {
@@ -20,13 +20,20 @@ export function destroyChart(id) {
   instances.delete(id);
 }
 
-export function setChartState(id, state) {
+export function setChartState(id, state, message = null) {
   const canvas = document.getElementById(id);
   const stage = stageFor(canvas);
   if (!stage) return;
   stage.classList.toggle('loading', state === 'loading');
-  stage.querySelector('.chart-empty')?.classList.toggle('d-none', state !== 'empty');
+  const empty = stage.querySelector('.chart-empty');
+  empty?.classList.toggle('d-none', state !== 'empty');
+  if (message && empty) empty.querySelector('span').textContent = message;
   canvas.classList.toggle('d-none', state === 'empty');
+}
+
+export function setChartEmpty(id, message) {
+  destroyChart(id);
+  setChartState(id, 'empty', message);
 }
 
 export function renderChart(id, configuration) {
@@ -51,7 +58,7 @@ export function renderChart(id, configuration) {
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 7, color: '#697386', padding: 18, font: { size: 11 } } },
-        tooltip: { padding: 11, cornerRadius: 9, backgroundColor: '#172033', titleFont: { size: 11 }, bodyFont: { size: 11 } },
+        tooltip: { padding: 11, cornerRadius: 8, backgroundColor: '#101828', titleFont: { size: 11 }, bodyFont: { size: 11 } },
         ...(configuration.options?.plugins || {}),
       },
       scales: configuration.type === 'doughnut' ? undefined : {

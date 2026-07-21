@@ -2,11 +2,12 @@ const axios = require('axios');
 const env = require('../config/env');
 const { parseDuration } = require('../utils/date');
 const { logApiError } = require('../utils/apiLogger');
+const hotProspectorConfig = require('../config/hotProspector');
 
-const endpoint = 'https://app.hotprospector.com/glu/Make_dashboard/get_total_record';
+const endpoint = hotProspectorConfig.webEndpoints.overview;
 const cache = new Map();
 const inFlight = new Map();
-const cacheTtlMs = 15000;
+const cacheTtlMs = env.metrics.overviewCacheTtlMs;
 
 function numberValue(value) {
   const parsed = Number(value);
@@ -24,7 +25,8 @@ function normalizeOverviewRecord(record) {
     newLeads: numberValue(record.total_lead_campaign),
     outboundDials: numberValue(record.total_calls),
     answeredCalls: numberValue(record.total_answer),
-    conversations: numberValue(record.mdm ?? record.totaldecisionMaker),
+    decisionMakers: numberValue(record.mdm ?? record.totaldecisionMaker),
+    conversations: null,
     validBookings: numberValue(record.total_appointment_overview),
     averageSpeedToLeadSeconds: parseDuration(record.Avg_speed),
     averageDialsPerLead: numberValue(record.averge_calls_per_lead),
@@ -70,7 +72,7 @@ async function getOverviewMetrics(filters) {
           },
         });
         const body = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-        const value = normalizeOverviewRecord(body);
+        const value = { ...normalizeOverviewRecord(body), fetchedAt: new Date() };
         cache.set(cacheKey, { createdAt: Date.now(), value });
         return value;
       } catch (error) {
